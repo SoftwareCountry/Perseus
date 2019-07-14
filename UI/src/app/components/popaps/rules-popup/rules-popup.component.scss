@@ -23,6 +23,11 @@
         box-shadow: -1px -1px 2px 0 rgba(0, 0, 0, 0.1);
     }
 
+    .rule {
+        display: flex;
+        flex-direction: column;
+    }
+
     mat-radio-group {
         display: flex;
         flex-direction: column;
@@ -38,7 +43,6 @@
         }
     }
     
-
     .button-group {
         display: flex;
         justify-content: space-between;

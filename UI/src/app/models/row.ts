@@ -4,6 +4,7 @@ import { Area } from 'src/app/components/area/area.component';
 export interface IRow {
     id: number;
     tableId: number;
+    tableName: string;
     name: string;
     type: string;
     area: Area;
@@ -14,15 +15,16 @@ export interface IRow {
     htmlElement: any;
 
     removeConnections(): void;
+    getTopValues(): void;
 }
 export class Row {
     constructor(
         public id,
         public tableId,
+        public tableName,
         public name,
         public type,
         public area,
-        public values,
         public comments,
         public visible = true,
         public connections = [],
@@ -31,5 +33,9 @@ export class Row {
 
     removeConnections() {
         this.connections = [];
+    }
+
+    getTopValues () {
+        //this.values = [10, 20, 30]
     }
 }

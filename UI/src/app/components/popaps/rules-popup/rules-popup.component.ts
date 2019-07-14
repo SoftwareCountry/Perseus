@@ -13,6 +13,11 @@ import { IRow } from 'src/app/models/row';
 })
 export class RulesPopupComponent {
   selectedRule: string;
+  applyFunctionCheckbox: boolean;
+  lookupCheckbox: boolean;
+
+  functionInputValue: any;
+  nameAsInputValue: any;
 
   constructor(
     private overlay: OverlayRef,
