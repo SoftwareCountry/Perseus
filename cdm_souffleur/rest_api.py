@@ -21,7 +21,8 @@ from peewee import *
 from flask import Blueprint
 
 app = Flask(__name__)
-app.config.from_object(f'config.{os.getenv("CDM_SOUFFLEUR_ENV").capitalize()}Config')
+config_name = os.getenv("CDM_SOUFFLEUR_ENV").capitalize().replace(u'\xa0', u'')
+app.config.from_object(f'config.{config_name}Config')
 CORS(app)
 app.config['UPLOAD_FOLDER'] = UPLOAD_SOURCE_SCHEMA_FOLDER
 app.secret_key = 'mdcr'
