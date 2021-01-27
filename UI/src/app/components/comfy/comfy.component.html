@@ -1,16 +1,17 @@
 <nav>
   <h4>Source columns
-    <ng-container *ngIf="data.source?.length">({{sourceRows.length}})</ng-container>
+    <ng-container *ngIf="data.source?.length">({{uniqSourceRows.length}})</ng-container>
   </h4>
   <app-search-by-name *ngIf="data.source?.length"
-                            class="filter-by-name"
+                            class="comfy-filter-by-name"
                             placeholder='Search by source column'
                             [criteria]="data.linkTablesSearch.sourceColumns"
                             (complete)="filterByName('source-column', $event)"
-                            (reset)="filterByNameReset('source-column', $event)"></app-search-by-name>
+                            (reset)="filterByNameReset('source-column')"></app-search-by-name>
   <app-columns-list *ngIf="data.source?.length"
                     class="source-columns-list"
-                    [sourceRows]="sourceRows"
+                    [allSourceRows]="allSourceRows"
+                    [uniqSourceRows]="uniqSourceRows"
                     (columnsSelected)="findTables($event)"></app-columns-list>
 </nav>
 <main>
@@ -18,14 +19,25 @@
     <article>
       <h4>Source tables
         <ng-container *ngIf="data.source?.length">({{source.length}})</ng-container>
-        <p class="saving" *ngIf="reportLoading">Loading report<span>.</span><span>.</span><span>.</span></p>
+        <p class="saving" *ngIf="reportLoading$ | async">
+          Loading report
+          <span>.</span>
+          <span>.</span>
+          <span>.</span>
+        </p>
+        <p class="saving" *ngIf="mappingLoading$ | async">
+          Loading mapping
+          <span>.</span>
+          <span>.</span>
+          <span>.</span>
+        </p>
       </h4>
       <app-search-by-name *ngIf="data.source?.length"
-                                class="filter-by-name"
-                                placeholder="Search by source table"
+                                class="comfy-filter-by-name"
+                                placeholder="Search by Loading reportsource table"
                                 [criteria]="data.linkTablesSearch.source"
                                 (complete)="filterByName('source', $event)"
-                                (reset)="filterByNameReset('source', $event)"></app-search-by-name>
+                                (reset)="filterByNameReset('source')"></app-search-by-name>
       <a *ngIf="data.source?.length"
          (click)="openCreateSqlDialog()">Create View</a>
       <div class="scrolled-items-rtl"
@@ -110,11 +122,11 @@
                   (click)="openFilter($event.target)">sort
         </mat-icon>
       </h4>
-      <app-search-by-name class="filter-by-name"
+      <app-search-by-name class="comfy-filter-by-name"
                                 placeholder="Search by target table"
                                 [criteria]="data.linkTablesSearch.target"
                                 (complete)="filterByName('target', $event)"
-                                (reset)="filterByNameReset('target', $event)"
+                                (reset)="filterByNameReset('target')"
                                 *ngIf="data.target?.length"></app-search-by-name>
       <div class="scrolled-items"
            #scrollEl
@@ -162,15 +174,15 @@
         <button mat-flat-button
                 class="cdm-button"
                 color="accent"
-                (click)="openCdmVersion(storeService.state.cdmVersions[0])">
-          Version {{storeService.state.cdmVersions[0]}}
+                (click)="openCdmVersion(state.cdmVersions[0])">
+          Version {{state.cdmVersions[0]}}
         </button>
 
         <button mat-flat-button
                 class="cdm-button"
                 color="accent"
-                (click)="openCdmVersion(storeService.state.cdmVersions[1])">
-          Version {{storeService.state.cdmVersions[1]}}
+                (click)="openCdmVersion(state.cdmVersions[1])">
+          Version {{state.cdmVersions[1]}}
         </button>
 
         <button mat-flat-button

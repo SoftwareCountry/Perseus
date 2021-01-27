@@ -18,6 +18,7 @@ import os
 from pathlib import Path
 from cdm_souffleur.model.similar_names_map import similar_names_map
 from itertools import groupby
+from peewee import PostgresqlDatabase
 
 
 def _convert_underscore_to_camel(word: str):
@@ -147,7 +148,28 @@ def prepare_sql(mapping_items, source_table, views, tagret_tables):
         view = views.get(source_table, None)
 
     if view:
-        view = view.replace('from ', 'from {sc}.').replace('join ', 'join {sc}.')
+        single_quote = view.rsplit('\'', 1)
+        double_quote = view.rsplit('\"', 1)
+        if len(single_quote) == 1:
+            if len(double_quote) == 1:
+                after_quote = double_quote[0]
+                before_quote = ''
+            else:
+                after_quote = double_quote[1]
+                before_quote = double_quote[0]
+        else:
+            if len(double_quote) == 1:
+                after_quote = single_quote[1]
+                before_quote = single_quote[0]
+            else:
+                if single_quote[1] < double_quote[1]:
+                    after_quote = single_quote[1]
+                    before_quote = single_quote[0]
+                else:
+                    after_quote = double_quote[0]
+                    before_quote = double_quote[0]
+        after_quote_replaced = addSchemaNames('SELECT table_name FROM information_schema.tables WHERE table_schema=\'public\'', after_quote)
+        view = f'{before_quote}\'{after_quote_replaced}'
         sql = f'WITH {source_table} AS (\n{view})\n{sql}FROM {source_table}'
     else:
         sql += 'FROM {sc}.' + source_table
@@ -157,6 +179,16 @@ def prepare_sql(mapping_items, source_table, views, tagret_tables):
             sql += f' AND {mapped_to_person_id_field} = CH.PERSON_ID'
     return sql
 
+def addSchemaNames(sql, view_sql):
+    pg_db = PostgresqlDatabase('testdb', user='postgres', password='postgres',
+                               host='localhost', port=5432)
+    pg_db.connect()
+    cursor = pg_db.execute_sql(sql)
+    for row in cursor.fetchall():
+        view_sql = re.sub(f"(?i)join {row[0]}", f'join {{sc}}.{row[0]}', view_sql)
+        view_sql = re.sub(f"(?i)from {row[0]}", f'from {{sc}}.{row[0]}', view_sql)
+    pg_db.close()
+    return view_sql
 
 def has_pair(field_name, mapping):
     for item in mapping:
@@ -192,7 +224,7 @@ def create_lookup(lookup, target_field, mapping):
         print(f'Directory {GENERATE_CDM_LOOKUP_SQL_PATH} already exist')
 
     if target_field.endswith('source_concept_id'):
-        return
+        return False
     else:
         pair_target_field = target_field.replace('concept_id', 'source_concept_id')
 
@@ -216,6 +248,7 @@ def create_lookup(lookup, target_field, mapping):
     result_filepath = os.path.join(GENERATE_CDM_LOOKUP_SQL_PATH, f'{lookup.split(".")[0]}.sql')
     with open(result_filepath, mode='w') as f:
         f.write(results_data)
+    return True
 
 
 def is_concept_id(field: str):
@@ -426,23 +459,22 @@ def get_xml(json_):
                     if lookup_name:
                         attrib_key = 'key'
                         if lookup_name not in lookups:
-                            create_lookup(lookup_name, target_field, groupList)
+                            lookup_created = create_lookup(lookup_name, target_field, groupList)
+                            if lookup_created:
+                                concepts_tag = prepare_concepts_tag(
+                                    concept_tags,
+                                    concepts_tag,
+                                    domain_definition_tag,
+                                    concept_tag_key,
+                                    target_field
+                                )
 
-                            concepts_tag = prepare_concepts_tag(
-                                concept_tags,
-                                concepts_tag,
-                                domain_definition_tag,
-                                concept_tag_key,
-                                target_field
-                            )
+                                concept_id_mapper = SubElement(concept_tags[concept_tag_key], 'ConceptIdMapper')
 
-                            concept_id_mapper = SubElement(concept_tags[concept_tag_key], 'ConceptIdMapper')
-
-                            mapper = SubElement(concept_id_mapper, 'Mapper')
-                            lookup = SubElement(mapper, 'Lookup')
-                            lookup.text = lookup_name.split(".")[0]
-
-                            lookups.append(lookup_name)
+                                mapper = SubElement(concept_id_mapper, 'Mapper')
+                                lookup = SubElement(mapper, 'Lookup')
+                                lookup.text = lookup_name.split(".")[0]
+                                lookups.append(lookup_name)
                     else:
                         attrib_key = 'conceptId'
 
@@ -531,6 +563,7 @@ def get_xml(json_):
                             is_source_value(target_field) or
                             is_source_concept_id(target_field)
                         ):
+                            apply_sql_transformation(sql_transformation, source_field, target_field, clone_key, query_tag)
                             continue
 
                         if target_field not in definitions:
@@ -541,16 +574,7 @@ def get_xml(json_):
                             v.text = f'{clone_key}{sql_alias}' if sql_alias else source_field
 
                             definitions.append(target_field)
-                    if sql_transformation:
-                        match_item = f"{source_field} as {clone_key}{target_field}"
-                        if sql_transformation not in query_tag.text:
-                            query_tag.text = query_tag.text.replace(
-                                match_item,
-                                sql_transformation,
-                            )
-                        else:
-                            query_tag.text = query_tag.text.replace(f'{match_item},\n', '')
-                            query_tag.text = query_tag.text.replace(f'{match_item}\n', '')
+                    apply_sql_transformation(sql_transformation, source_field, target_field, clone_key, query_tag)
                 previous_target_table = target_table
                 if target_table == 'person':
                     generate_bath_sql_file(groupList, source_table, views)
@@ -565,6 +589,17 @@ def get_xml(json_):
         write_xml(query_definition_tag, source_table, result)
     return result
 
+def apply_sql_transformation(sql_transformation, source_field, target_field, clone_key, query_tag):
+    if sql_transformation:
+        match_item = f"{source_field} as {clone_key}{target_field}"
+        if sql_transformation not in query_tag.text:
+            query_tag.text = query_tag.text.replace(
+                match_item,
+                sql_transformation,
+            )
+        else:
+            query_tag.text = query_tag.text.replace(f'{match_item},\n', '')
+            query_tag.text = query_tag.text.replace(f'{match_item}\n', '')
 
 def write_xml(tag, filename, result):
     xml = ElementTree(tag)

@@ -23,7 +23,6 @@ import { MappingPageSessionStorage } from 'src/app/models/implementation/mapping
 import { IRow } from 'src/app/models/row';
 import { BridgeService } from 'src/app/services/bridge.service';
 import { IVocabulary, VocabulariesService } from 'src/app/services/vocabularies.service';
-import { environment } from 'src/environments/environment';
 import { Area } from '../../models/area';
 import { CommonUtilsService } from '../../services/common-utils.service';
 import { CommonService } from '../../services/common.service';
@@ -35,10 +34,10 @@ import { BaseComponent } from '../../common/components/base/base.component';
 import { Criteria } from '../../common/components/search-by-name/search-by-name.component';
 import { CdmFilterComponent } from '../popups/open-cdm-filter/cdm-filter.component';
 import { SqlEditorComponent } from '../sql-editor/sql-editor.component';
-import { isConceptTable } from './services/concept.service';
 import { DataService } from 'src/app/services/data.service';
 import * as cdmTypes from '../popups/open-cdm-filter/CdmByTypes.json';
 import { ScanDataDialogComponent } from '../../scan-data/scan-data-dialog/scan-data-dialog.component';
+import { Observable } from 'rxjs/internal/Observable';
 
 @Component({
   selector: 'app-comfy',
@@ -78,13 +77,16 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
   target = [];
   targetConfig = {};
   sourceConnectedTo = [];
-  sourceRows: IRow[] = [];
+  allSourceRows: IRow[] = [];
+  uniqSourceRows: IRow[] = [];
   sourceFocusedElement;
   speed = 5;
   subs = new Subscription();
   private animationFrame: number | undefined;
 
-  reportLoading = false;
+  reportLoading$: Observable<boolean>;
+  mappingLoading$: Observable<boolean>;
+
   vocabularies: IVocabulary[] = [];
   data = {
     source: [],
@@ -107,8 +109,8 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
     execute: (event: any) => {
       const { container, previousContainer, previousIndex, currentIndex } = event;
       const data = container.data;
-      const [ area, targetName ] = container.id.split('-');
-      const [ previousArea, previousTargetName ] = previousContainer.id.split('-');
+      const [ area ] = container.id.split('-');
+      const [ previousArea ] = previousContainer.id.split('-');
       const exists = container.data.find(tableName => previousContainer.data[ previousIndex ] === tableName);
 
       if (area === previousArea) {
@@ -152,6 +154,57 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
     }
   }
 
+  ngOnInit() {
+    this.vocabularies = this.vocabulariesService.vocabularies;
+
+    this.dataService.getCDMVersions().subscribe(res => {
+      res = res.sort((a, b) => (a > b ? -1 : 1));
+      this.storeService.add('cdmVersions', res);
+    });
+
+    this.storeService.state$.subscribe(res => {
+      if (res) {
+        this.data = res;
+        this.initializeData();
+      }
+    });
+
+    this.bridgeService.applyConfiguration$
+      .pipe(
+        takeUntil(this.ngUnsubscribe),
+        switchMap(configuration => this.dataService.saveSourceSchemaToDb(configuration.sourceTables)))
+      .subscribe(res => {
+        if (res === 'OK') {
+          this.uploadService.mappingLoading = false;
+          this.snackBar.open('Source schema has been loaded to database', ' DISMISS ');
+        } else {
+          this.snackBar.open('ERROR: Source schema has not been loaded to database!', ' DISMISS ');
+        }
+      }, () => this.uploadService.mappingLoading = false);
+
+    this.bridgeService.resetAllMappings$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(_ => {
+        Object.values(this.targetConfig).forEach((item: any) => {
+          item.data = [ item.first ];
+        });
+        this.initializeData();
+
+        this.snackBar.open('Reset all mappings success', ' DISMISS ');
+      });
+
+    this.bridgeService.saveAndLoadSchema$
+      .pipe(takeUntil(this.ngUnsubscribe))
+      .subscribe(_ => {
+        this.bridgeService.reportLoaded();
+        this.initializeData();
+        this.snackBar.open('New source schema loaded', ' DISMISS ');
+      });
+
+    this.reportLoading$ = this.bridgeService.reportLoading$;
+    this.mappingLoading$ = this.uploadService.mappingLoading$;
+  }
+
   ngAfterViewInit() {
     const onMove$ = this.dragEls.changes.pipe(
       startWith(this.dragEls),
@@ -172,6 +225,10 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
     );
 
     this.subs.add(onDown$.subscribe());
+  }
+
+  ngOnDestroy() {
+    this.subs.unsubscribe();
   }
 
   dragMoved(event) {
@@ -207,90 +264,16 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
     const scrollTop = baseEl.scrollTop;
     const top = box.top + -y;
     if (top > 0 && scrollTop !== 0) {
-      const newScroll = scrollTop - this.speed * Math.exp(top / 50);
-      baseEl.scrollTop = newScroll;
+      baseEl.scrollTop = scrollTop - this.speed * Math.exp(top / 50);
       this.animationFrame = requestAnimationFrame(() => this.scroll($event));
       return;
     }
 
     const bottom = y - box.bottom;
     if (bottom > 0 && scrollTop < box.bottom) {
-      const newScroll = scrollTop + this.speed * Math.exp(bottom / 50);
-      baseEl.scrollTop = newScroll;
+      baseEl.scrollTop = scrollTop + this.speed * Math.exp(bottom / 50);
       this.animationFrame = requestAnimationFrame(() => this.scroll($event));
     }
-  }
-
-  ngOnDestroy() {
-    this.subs.unsubscribe();
-  }
-
-  ngOnInit() {
-    /*Experiment for vocabulary*/
-    this.vocabulariesService
-      .setVocabularyConnectionString()
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe(
-        ok => {
-          this.vocabulariesService
-            .getVocabularies()
-            .pipe(takeUntil(this.ngUnsubscribe))
-            .subscribe(vocabularies => {
-              this.vocabularies = [ ...vocabularies ];
-            });
-        },
-        error => console.error(error)
-      );
-
-    this.dataService.getCDMVersions().subscribe(res => {
-      res = res.sort((a, b) => (a > b ? -1 : 1));
-      this.storeService.add('cdmVersions', res);
-    });
-
-    this.storeService.state$.subscribe(res => {
-      if (res) {
-        this.data = res;
-        this.initializeData();
-      }
-    });
-
-    this.bridgeService.applyConfiguration$.pipe(
-      takeUntil(this.ngUnsubscribe),
-      switchMap(configuration => {
-      return this.dataService.saveSourceSchemaToDb(configuration.sourceTables);
-    }))
-    .subscribe(( res ) => {
-      res !== 'OK' ?
-      this.snackBar.open('ERROR: Source schema has not been loaded to database!', ' DISMISS ') :
-      this.snackBar.open('Source schema has been loaded to database', ' DISMISS ');
-    });
-
-    this.bridgeService.resetAllMappings$
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe(_ => {
-        Object.values(this.targetConfig).forEach((item: any) => {
-          item.data = [ item.first ];
-        });
-        this.initializeData();
-
-        this.snackBar.open('Reset all mappings success', ' DISMISS ');
-      });
-
-    this.bridgeService.saveAndLoadSchema$
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe(_ => {
-        this.bridgeService.reportLoaded();
-        this.initializeData();
-
-        this.snackBar.open('New source schema loaded', ' DISMISS ');
-      });
-
-    this.bridgeService.reportLoading$
-      .pipe(takeUntil(this.ngUnsubscribe))
-      .subscribe(res => {
-        this.reportLoading = res;
-        this.snackBar.open('New source schema loaded', ' DISMISS ');
-      });
   }
 
   initializeSourceData() {
@@ -329,7 +312,8 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
       }
       return prev.concat(ar);
     }, []);
-    this.sourceRows = uniqBy(allColumns, 'name');
+    this.allSourceRows = allColumns;
+    this.uniqSourceRows = uniqBy(allColumns, 'name');
     this.filterAtInitialization('source-column', this.data.linkTablesSearch.sourceColumns);
   }
 
@@ -345,7 +329,7 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
 
   async openMapping(event?: any) {
     if (!event || event.index !== 0)
-      this.router.navigate(['/mapping'], { queryParams: event, skipLocationChange: true})
+      this.router.navigate(['/mapping'], { queryParams: event, skipLocationChange: true});
   }
 
   getMappingConfig() {
@@ -404,7 +388,7 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
     if (this.storeService.state.targetClones[ targetTableName ]) {
       delete this.storeService.state.targetClones[ targetTableName ];
     }
-    //previous version of remove mapping algorithm. Has been commented since logic with deleting links from all concept tables is not required
+    // previous version of remove mapping algorithm. Has been commented since logic with deleting links from all concept tables is not required
     /*     if (isConceptTable(targetTableName)) {
           environment.conceptTables.forEach(conceptTable => {
             this.bridgeService.deleteArrowsForMapping(
@@ -427,7 +411,7 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
 
   filterByName(area: string, byName: Criteria): void {
 
-    const filterByName = (name, index?) => {
+    const filterByName = (name) => {
       return name.toUpperCase().indexOf(byName.criteria.toUpperCase()) > -1;
     };
 
@@ -444,7 +428,7 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
       }
       case Area.SourceColumn: {
         const rows = this.data.source.reduce((prev, cur) => [ ...prev, ...cur.rows ], []);
-        this.sourceRows = uniqBy(rows, 'name').filter(row => filterByName(row.name));
+        this.uniqSourceRows = uniqBy(rows, 'name').filter(row => filterByName(row.name));
         this.data.linkTablesSearch.sourceColumns = byName.criteria;
         break;
       }
@@ -474,7 +458,7 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
     this.targetTableNames = uniqueTargetNames.filter(filterByType);
   }
 
-  filterByNameReset(area: string, byName: Criteria): void {
+  filterByNameReset(area: string): void {
     switch (area) {
       case Area.Source: {
         this.data.linkTablesSearch.source = '';
