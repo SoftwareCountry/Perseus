@@ -12,9 +12,9 @@ const CONCEPT_TABLES = [
 
 export const environment = {
   production: true,
-  url: 'http://192.168.20.47/api',
+  url: 'http://185.134.75.47/api',
   conceptTables: CONCEPT_TABLES,
   config: '',
-  whiteRabbitUrl: 'http://192.168.20.47',
-  cdmBuilderUrl: 'http://192.168.20.47:9000'
+  whiteRabbitUrl: 'http://185.134.75.47',
+  cdmBuilderUrl: 'http://185.134.75.47:9000'
 };
