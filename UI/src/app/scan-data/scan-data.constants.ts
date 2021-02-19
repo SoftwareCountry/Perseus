@@ -74,7 +74,7 @@ export const uniformSamplingTooltipText = 'For all fields, choose every possible
 
 export const fakeDataDbSettings: DbSettings = {
   dbType: DbTypes.POSTGRESQL,
-  server: '10.110.1.7',
+  server: 'JnJDMdemoU1',
   database: 'testdb',
   user: 'postgres',
   password: 'postgres',
