@@ -74,12 +74,13 @@ export class VocabularySearchComponent extends BaseComponent implements OnInit, 
 
   openedFilter: string;
 
+  oldSelectedFilters: string[] = []; // only names
   selectedFilters: FilterValue[] = [];
 
   chipsHeight = '';
 
   requestParams: VocabSearchReqParams = {
-    pageSize: 100,
+    pageSize: 10,
     pageNumber: 1,
     query: '',
     updateFilters: true
@@ -121,7 +122,7 @@ export class VocabularySearchComponent extends BaseComponent implements OnInit, 
 
   private request$ = new Subject<VocabSearchReqParams>();
 
-  private readonly chipHeight = 72;
+  private readonly chipHeight = 78;
 
   private readonly maxPageSize = 500;
 
@@ -171,28 +172,21 @@ export class VocabularySearchComponent extends BaseComponent implements OnInit, 
   }
 
   @HostListener('document:keyup.enter')
-  onEnterClick() {
+  onEnterOrApply() {
     const changes = this.findChanges();
+    const filtersChanged = this.isFilterChanged();
 
     if (changes) {
       const {query, pageSize} = changes;
-      const updateFilters = this.requestParams.query !== query;
 
-      let checkedPageSize: number;
-      if (!pageSize || pageSize < 1) {
-        checkedPageSize = 1;
-      } else if (pageSize > this.maxPageSize) {
-        checkedPageSize = this.maxPageSize;
-      } else {
-        checkedPageSize = pageSize;
-      }
+      this.setPageSizeAndQuery(query, pageSize);
+    }
 
-      this.requestParams = {
-        ...this.requestParams,
-        pageSize: checkedPageSize,
-        query,
-        updateFilters
-      };
+    if (filtersChanged) {
+      this.setFilters();
+    }
+
+    if (changes || filtersChanged) {
       this.makeRequest(this.requestParams);
     }
   }
@@ -257,15 +251,16 @@ export class VocabularySearchComponent extends BaseComponent implements OnInit, 
   }
 
   onClear() {
-    this.selectedFilters.forEach(filter =>
-      filter.checked = false
-    );
-    this.selectedFilters = [];
-    this.updateChipsHeight();
-  }
+    if (this.selectedFilters.length > 0) {
+      this.selectedFilters.forEach(filter =>
+        filter.checked = false
+      );
+      this.selectedFilters = [];
+      this.updateChipsHeight();
 
-  onApply() {
-    this.setFiltersAndMakeRequest();
+      this.setFilters();
+      this.makeRequest(this.requestParams);
+    }
   }
 
   onModeChange(value: string) {
@@ -371,6 +366,9 @@ export class VocabularySearchComponent extends BaseComponent implements OnInit, 
 
   private updateFilters(facets: VocabSearchFilters) {
     this.filters = Object.keys(facets)
+      .sort((key1, key2) =>
+        this.filtersRecognizer[key1].priority - this.filtersRecognizer[key2].priority
+      )
       .map((filterKey, filterIndex) => {
         const filter = this.filtersRecognizer[filterKey];
         const filterValue = facets[filterKey];
@@ -380,18 +378,25 @@ export class VocabularySearchComponent extends BaseComponent implements OnInit, 
           field: filterKey,
           color: filter.color as string,
           values: Object.keys(filterValue)
-            .map(valueKey => ({
-              name: valueKey,
-              filterIndex,
-              count: filterValue[valueKey] as number,
-              checked: this.selectedFilters.find(value => value.name === valueKey)?.checked,
-              disabled: (filterValue[valueKey] as number) === 0
-            }))
+            .map(valueKey => {
+              const oldFilterValue = this.filters[filterIndex]?.values.find(value => value.name === valueKey);
+
+              if (oldFilterValue) {
+                oldFilterValue.count = filterValue[valueKey] as number;
+                oldFilterValue.disabled = oldFilterValue.count === 0;
+                return oldFilterValue;
+              } else {
+                return {
+                  name: valueKey,
+                  filterIndex,
+                  count: filterValue[valueKey] as number,
+                  checked: this.selectedFilters.find(value => value.name === valueKey)?.checked,
+                  disabled: (filterValue[valueKey] as number) === 0
+                }
+              }
+            })
         };
       })
-      .sort((f1, f2) => {
-        return this.filtersRecognizer[f1.field].priority - this.filtersRecognizer[f2.field].priority
-      });
   }
 
   private updateChipsHeight() {
@@ -399,7 +404,9 @@ export class VocabularySearchComponent extends BaseComponent implements OnInit, 
     this.chipsHeight = `${height}px`;
   }
 
-  private setFiltersAndMakeRequest() {
+  private setFilters() {
+    this.saveOldFilters();
+
     const getConcreteFiltersByIndex = index => this.selectedFilters
       .filter(filter => filter.filterIndex === index)
       .map(filter => filter.name);
@@ -411,10 +418,8 @@ export class VocabularySearchComponent extends BaseComponent implements OnInit, 
       conceptClass: getConcreteFiltersByIndex(2),
       vocabulary: getConcreteFiltersByIndex(3),
       invalidReason: getConcreteFiltersByIndex(4),
-      updateFilters: false
+      updateFilters: true
     };
-
-    this.makeRequest(this.requestParams);
   }
 
   private setPagesAndElementsCount(total: number, pageCount: number) {
@@ -424,6 +429,10 @@ export class VocabularySearchComponent extends BaseComponent implements OnInit, 
         this.setMovableIndexes(pageCount - 2, pageCount);
       } else if (this.currentPage === this.pageCount) { // current page = old page count
         this.setMovableIndexes(this.currentPage - 1, pageCount);
+      }
+
+      if (this.currentPage === 0) {
+        this.currentPage = 1;
       }
 
       this.total = total;
@@ -448,7 +457,7 @@ export class VocabularySearchComponent extends BaseComponent implements OnInit, 
   private loadState(): boolean {
     if (this.stateService.state) {
       const {requestParams, mode, selectedFilters, concepts,
-        currentPage, pageCount, filters, movableIndexes} = this.stateService.state;
+        currentPage, pageCount, filters, movableIndexes, sort} = this.stateService.state;
       this.requestParams = requestParams;
       this.mode = mode;
       this.selectedFilters = selectedFilters;
@@ -457,6 +466,7 @@ export class VocabularySearchComponent extends BaseComponent implements OnInit, 
       this.pageCount = pageCount;
       this.filters = filters;
       this.movableIndexes = movableIndexes;
+      this.sort = sort;
 
       this.updateChipsHeight();
 
@@ -476,8 +486,42 @@ export class VocabularySearchComponent extends BaseComponent implements OnInit, 
         currentPage: this.currentPage,
         pageCount: this.pageCount,
         filters: this.filters,
-        movableIndexes: this.movableIndexes
+        movableIndexes: this.movableIndexes,
+        sort: this.sort
       };
     }
+  }
+
+  private setPageSizeAndQuery(query: string, pageSize: number) {
+    const updateFilters = this.requestParams.query !== query;
+
+    let checkedPageSize: number;
+    if (!pageSize || pageSize < 1) {
+      checkedPageSize = 1;
+    } else if (pageSize > this.maxPageSize) {
+      checkedPageSize = this.maxPageSize;
+    } else {
+      checkedPageSize = pageSize;
+    }
+
+    this.requestParams = {
+      ...this.requestParams,
+      pageSize: checkedPageSize,
+      query,
+      updateFilters
+    };
+  }
+
+  private isFilterChanged() {
+    const equal = (oldFilters: string[], newFilters: FilterValue[]) =>
+      oldFilters.length === newFilters.length &&
+      oldFilters.every((name, index) => name === newFilters[index].name)
+
+    return !equal(this.oldSelectedFilters, this.selectedFilters);
+  }
+
+  private saveOldFilters() {
+    this.oldSelectedFilters = this.selectedFilters
+      .map(filter => filter.name);
   }
 }

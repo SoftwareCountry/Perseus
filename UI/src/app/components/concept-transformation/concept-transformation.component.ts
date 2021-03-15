@@ -12,7 +12,8 @@ import { cloneDeep } from 'src/app/infrastructure/utility';
 import { LookupComponent } from '../vocabulary-transform-configurator/lookup/lookup.component';
 import { LookupService } from 'src/app/services/lookup.service';
 import { BaseComponent } from '../../base/base.component';
-import { createConceptFields } from 'src/app/services/utilites/concept-util';
+import { createConceptFields, updateConceptsIndexes, updateConceptsList } from 'src/app/services/utilites/concept-util';
+import { ConceptTransformationService } from 'src/app/services/concept-transformation.sevice';
 
 @Component({
   selector: 'app-concept-transformation',
@@ -54,6 +55,7 @@ export class ConceptTransformationComponent extends BaseComponent implements OnI
   lookupType = 'source_to_standard';
   targetCloneName: string;
   targetCondition: string;
+  row: any;
 
   get displayedColumns() {
     return [ 'source_value', 'concept_id', 'source_concept_id', 'type_concept_id', 'remove_concept' ];
@@ -61,12 +63,18 @@ export class ConceptTransformationComponent extends BaseComponent implements OnI
 
   ngOnInit(): void {
 
-    this.targetTableName = this.payload.arrow.target.tableName;
+    this.targetTableName = this.payload.row.tableName;
     this.conceptFields = this.conceptFieldsMap[ this.targetTableName ];
-    this.targetCloneName = this.payload.arrow.target.cloneTableName;
-    this.targetCondition = this.payload.arrow.condition;
+    this.targetCloneName = this.payload.row.cloneTableName;
+    this.targetCondition = this.payload.row.condition;
+    this.row = this.payload.row;
 
     this.collectConnectedFields();
+
+    if(!this.storeService.state.concepts[ `${this.targetTableName}|${this.payload.oppositeSourceTable}` ]){
+      const conceptService = new ConceptTransformationService(this.targetTableName, this.payload.oppositeSourceTable, this.storeService.state.concepts);
+      conceptService.addNewConceptTable();
+    }
 
     this.conceptsTable = this.storeService.state.concepts[ `${this.targetTableName}|${this.payload.oppositeSourceTable}` ];
 
@@ -86,7 +94,7 @@ export class ConceptTransformationComponent extends BaseComponent implements OnI
       const connectedFields = [];
 
       const links = Object.values(this.bridgeService.arrowsCache)
-        .filter(this.bridgeService.sourceConnectedToSameTargetByName(item, this.payload.arrow, this.payload.oppositeSourceTable));
+        .filter(this.bridgeService.sourceConnectedToSameTargetByName(item, this.row, this.payload.oppositeSourceTable));
       links.forEach(link => {
         if (link.source.grouppedFields && link.source.grouppedFields.length) {
           link.source.grouppedFields.forEach(it => {
@@ -136,7 +144,8 @@ export class ConceptTransformationComponent extends BaseComponent implements OnI
       fields
     };
     this.conceptsTable.conceptsList.push(new Concept(conceptOptions));
-    this.dataSource = new MatTableDataSource(this.conceptsTable.conceptsList);
+    this.dataSource = new MatTableDataSource(this.conceptsTable.conceptsList
+      .filter(it => it.fields[ 'concept_id' ].targetCloneName === this.targetCloneName));
   }
 
   removeConcept(row: any) {
@@ -149,10 +158,16 @@ export class ConceptTransformationComponent extends BaseComponent implements OnI
   }
 
   add() {
+    this.removeSelection();
+
+    this.conceptsTable.conceptsList = updateConceptsList(this.conceptsTable.conceptsList);
+    updateConceptsIndexes(this.conceptsTable.conceptsList);
+    this.bridgeService.updateConceptArrowTypes(this.targetTableName, this.payload.oppositeSourceTable, this.targetCloneName) 
+
     this.storeService.state.concepts[ `${this.targetTableName}|${this.payload.oppositeSourceTable}` ] = this.conceptsTable;
 
     if (this.payload.oppositeSourceTable === 'similar') {
-      this.bridgeService.updateSimilarConcepts(this.payload.arrow);
+      this.bridgeService.updateSimilarConcepts(this.row);
     }
 
     if (this.lookupComponent.updatedSourceToStandard || this.lookupComponent.updatedSourceToSource) {
@@ -160,7 +175,6 @@ export class ConceptTransformationComponent extends BaseComponent implements OnI
       this.updateLookupValue(this.lookupComponent.updatedSourceToStandard, 'source_to_standard');
       this.updateLookupValue(this.lookupComponent.updatedSourceToSource, 'source_to_source');
     }
-    this.removeSelection();
     this.dialogRef.close();
   }
 
