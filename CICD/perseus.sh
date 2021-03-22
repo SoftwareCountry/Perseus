@@ -13,14 +13,21 @@ action=$1
 repoPwd=$2
 repoUrl=perseushub.arcadialab.ru
 
-backendImage=$repoUrl/perseus-backend
-cdmbImage=$repoUrl/cdm-builder-service
-dbImage=$repoUrl/perseus-database
-dqdImage=$repoUrl/dqd-service
-frontendImage=$repoUrl/perseus-frontend
-rserveImage=$repoUrl/r-serve
-wrImage=$repoUrl/white-rabbit-service
+backend=perseus-backend
+cdmb=cdm-builder-service
+db=perseus-database
+dqd=dqd-service
+frontend=perseus-frontend
+rserv=r-serve
+wr=white-rabbit-service
 
+backendImage=$repoUrl/$backend
+cdmbImage=$repoUrl/$cdmb
+dbImage=$repoUrl/$db
+dqdImage=$repoUrl/$dqd
+frontendImage=$repoUrl/$frontend
+rservImage=$repoUrl/$rserv
+wrImage=$repoUrl/$wr
 
 dockerAction () {
   image=$1
@@ -57,13 +64,13 @@ deploy () {
 
 startPerseus () {
 
-  docker run --name perseus-database -d -p 5431:5432 $dbImage
-  docker run -e CDM_SOUFFLEUR_ENV='default' --name perseus-backend -d --network host $backendImage
-  docker run --name perseus-frontend -d --network host $frontendImage
-  docker run --name white-rabbit-service -d --network host $wrImage
-  docker run -d --network host --name cdm-builder-service $cdmbImage
-  docker run -d --network host --name dqd-service $dqdImage
-  docker run -d --network host --name r-serve -p 6311:6311 $rserveImage
+  docker run --name $db -d -p 5431:5432 $dbImage
+  docker run -e CDM_SOUFFLEUR_ENV='default' --name $backend -d --network host $backendImage
+  docker run --name $frontend -d --network host $frontendImage
+  docker run --name $wr -d --network host $wrImage
+  docker run -d --network host --name $cdmb $cdmbImage
+  docker run -d --network host --name $dqd $dqdImage
+  docker run -d --network host --name $rserv -p 6311:6311 $rservImage
   echo Perseus was started.
 }
 
@@ -80,7 +87,7 @@ installPerseus () {
   deploy $dbImage
   deploy $dqdImage
   deploy $wrImage
-  deploy $rserveImage
+  deploy $rservImage
   deploy $backendImage
   deploy $frontendImage
   docker logout
@@ -100,7 +107,7 @@ then
   startPerseus
 else
   dockerAction $wrImage
-  dockerAction $rserveImage
+  dockerAction $rservImage
   dockerAction $frontendImage
   dockerAction $dqdImage
   dockerAction $cdmbImage
