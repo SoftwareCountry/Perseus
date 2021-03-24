@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to manage Perseus application.
-# Install Perseus: perseus.sh install YourRegistryPassword
+# Install Perseus: perseus.sh install
 # Uninstall Perseus: perseus.sh uninstall
 # Start Perseus from images: perseus.sh start
 # Stop Perseus and delete containers: perseus.sh stop
@@ -15,7 +15,8 @@ source perseus.h
 
 # DECLARATIONS
 action=$1
-repoPwd=$2
+repoPwd=$(<repo_pwd)
+
 
 setImages () {
   backendImage=$registry/$backendImage
@@ -29,8 +30,8 @@ setImages () {
 
 dockerAction () {
   image=$1
-  echo [$image $action] 
-  
+  echo [$image $action]
+
   if [ $action = "stop" ]
   then
      echo "Stop and removing container $image..."
@@ -44,13 +45,13 @@ dockerAction () {
     echo "Cleanup images and volumes..."
     docker image prune -a -f || true
     docker volume prune -f || true
-  
+
   else
     echo Wrong action value=[$action], can be "sc", "rc" or "ri".
-  fi 
+  fi
 
-  echo Completed. 
-  
+  echo Completed.
+
 }
 
 deploy () {
@@ -131,7 +132,7 @@ installPerseus () {
   deploy $backendImage
   deploy $frontendImage
 
-  echo Perseus was succefully installed. 
+  echo Perseus was succefully installed.
 }
 
 
@@ -147,11 +148,13 @@ then
 elif [ $action = "start" ]
 then
   startPerseus
-elif [ $action = "deploy"]
+elif [ $action = "deploy" ]
 then
   component=$2
-  deploy "$component"Image
-  start  $component  
+  compImage="$component"Image 
+  compImage=${!compImage}
+  deploy $compImage
+  start  $component
 else
   dockerAction $wrImage
   dockerAction $rservImage
