@@ -8,6 +8,8 @@
 
 set -e
 
+source perseus.h
+
 # DECLARATIONS
 action=$1
 repoPwd=$2
