@@ -49,7 +49,7 @@ wrImage=""
 
 #Services' names.
 backend=perseus-backend
-cdmb=cdm-builder-service
+builder=cdm-builder-service
 db=perseus-database
 dqd=dqd-service
 frontend=perseus-frontend

@@ -16,7 +16,7 @@ repoPwd=$2
 
 setImages () {
   backendImage=$registry/$backendImage
-  cdmbImage=$registry/$cdmbImage
+  builderImage=$registry/$builderImage
   dbImage=$registry/$dbImage
   dqdImage=$registry/$dqdImage
   frontendImage=$registry/$frontendImage
@@ -63,7 +63,7 @@ startPerseus () {
   docker run -e CDM_SOUFFLEUR_ENV='default' --name $backend -d --network host $backendImage
   docker run --name $frontend -d --network host $frontendImage
   docker run --name $wr -d --network host $wrImage
-  docker run -d --network host --name $cdmb $cdmbImage
+  docker run -d --network host --name $builder $builderImage
   docker run -d --network host --name $dqd $dqdImage
   docker run -d --network host --name $rserv -p 6311:6311 $rservImage
   echo Perseus was started.
@@ -78,7 +78,7 @@ installPerseus () {
   fi
 
   docker login perseushub.arcadialab.ru -u="registryUser" -p="$repoPwd"
-  deploy $cdmbImage
+  deploy $builderImage
   deploy $dbImage
   deploy $dqdImage
   deploy $wrImage
@@ -93,8 +93,8 @@ installPerseus () {
 
 #MAIN
 
-setEnv dev
-SetImages
+setEnv prod
+setImages
 
 if [ $action = "install" ]
 then
@@ -108,7 +108,7 @@ else
   dockerAction $rservImage
   dockerAction $frontendImage
   dockerAction $dqdImage
-  dockerAction $cdmbImage
+  dockerAction $builderImage
   dockerAction $dbImage
   dockerAction $backendImage
 fi
