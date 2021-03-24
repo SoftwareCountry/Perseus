@@ -11,23 +11,16 @@ set -e
 # DECLARATIONS
 action=$1
 repoPwd=$2
-repoUrl=perseushub.arcadialab.ru
 
-backend=perseus-backend
-cdmb=cdm-builder-service
-db=perseus-database
-dqd=dqd-service
-frontend=perseus-frontend
-rserv=r-serve
-wr=white-rabbit-service
-
-backendImage=$repoUrl/$backend
-cdmbImage=$repoUrl/$cdmb
-dbImage=$repoUrl/$db
-dqdImage=$repoUrl/$dqd
-frontendImage=$repoUrl/$frontend
-rservImage=$repoUrl/$rserv
-wrImage=$repoUrl/$wr
+setImages () {
+  backendImage=$registry/$backendImage
+  cdmbImage=$registry/$cdmbImage
+  dbImage=$registry/$dbImage
+  dqdImage=$registry/$dqdImage
+  frontendImage=$registry/$frontendImage
+  rservImage=$registry/$rservImage
+  wrImage=$registry/$wrImage
+}
 
 dockerAction () {
   image=$1
@@ -97,6 +90,9 @@ installPerseus () {
 
 
 #MAIN
+
+setEnv dev
+SetImages
 
 if [ $action = "install" ]
 then

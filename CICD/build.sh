@@ -1,56 +1,14 @@
 #!/bin/bash
 
+# $1 - component to build (wr, dqd, db, ...)
+# $2 - env (dev, prod)
+
 set -e
 
-registry=perseushub.arcadialab.ru
-branch=master
-
-#WhiteRabbit
-wrProdImage="white-rabbit-service"
-wrDevImage="white-rabbit-service"
-wrSrc=~/source/WhiteRabbit
-
-#RServ
-rservProdImage=r-serve
-rservDevImage=r-serve_dev
-rservSrc=~/source/DataQualityDashboard/R
-
-#DQD
-dqdProdImage="dqd-service"
-dqdDevImage="dqd-service_dev"
-dqdSrc=~/source/DataQualityDashboard
-
-#Frontend
-frontendProdImage=perseus-frontend
-frontendStageImage=perseus-frontend_stage
-frontendDevImage=perseus-frontend_dev
-frontendSrc=~/source/CDMSouffleur/UI
-
-#Backend
-backendProdImage="perseus-backend"
-backendDevImage="perseus-backend_dev"
-backendStageImage="perseus-backend_stage"
-backendSrc=~/source/CDMSouffleur
-
-#Builder
-builderProdImage="cdm-builder-service"
-builderDevImage="cdm-builder-service_dev"
-builderSrc=~/source/ETL-CDMBuilder
-
-#DB
-dbProdImage=perseus-database
-dbDevImage=perseus-database_dev
-dbSrc=~/source/CDMSouffleur/database
+source perseus.h
 
 #setup
-env=prod
-backendImage=$backendProdImage
-builderImage=$builderProdImage
-dbImage=$dbProdImage
-dqdImage=$dqdProdImage
-frontendImage=$frontendProdImage
-rservImage=$rservProdImage
-wrImage=$wrProdImage
+env=$2
 
 pullSrc (){
   echo [cd to $1]
@@ -60,7 +18,7 @@ pullSrc (){
 }
 
 buildImage () {
-  pullSrc $1 $branch   
+  pullSrc $1 $branch
   image=$2
   docker build -t $image .
 }
@@ -77,7 +35,7 @@ buildCDMBuilder () {
   image=$2
   docker build -f "source/org.ohdsi.cdm.presentation.builderwebapi/Dockerfile" -t $image .
 }
-	
+
 
 buildDQD () {
   pullSrc $1 $branch
@@ -86,33 +44,60 @@ buildDQD () {
   docker build -t $image --build-arg prop=$env .
 }
 
+tagAndPush () {
+  image=$1
+  docker tag $image $registry/$image
+  docker login perseushub.arcadialab.ru -u="registryUser" -p="eV9wDRjIB1BflWfV"
+  docker push $registry/$image
+  docker logout perseushub.arcadialab.ru 
+}
 
-buildImage $wrSrc $wrImage
-buildRServ $rservSrc $rservImage
-buildImage $frontendSrc $frontendImage
-buildImage $backendSrc $backendImage 
-buildCDMBuilder $builderSrc $builderImage
-buildImage $dbSrc $dbImage
-buildDQD   $dqdSrc $dqdImage
+build () {
+  comp=$1
+  image=""
+  case $comp in
+     "wr")
+          image=$wrImage
+          buildImage $wrSrc $image
+          ;;
+     "dqd")
+          image=$dqdImage
+          buildDQD $dqdSrc $image
+          ;;
+     "backend")
+          image=$backendImage
+          buildImage $backendSrc $image
+          ;; 
+     "frontend")
+          image=$frontendImage
+          buildImage $frontendSrc $image
+          ;;
 
+     "rserv")
+          image=$rservImage
+          buildRServ $rservdSrc $rservImage
+          ;;
 
-docker tag $wrImage $registry/$wrImage
-docker tag $frontendImage $registry/$frontendImage
-docker tag $backendImage $registry/$backendImage
-docker tag $builderImage $registry/$builderImage
-docker tag $dbImage $registry/$dbImage
-docker tag $dqdImage $registry/$dqdImage
-docker tag $rservImage $registry/$rservImage
+     "cdmb")
+          image=$builderImage
+          buildCDMBuilder $builderSrc $image
+          ;;
 
-docker login perseushub.arcadialab.ru -u="registryUser"
+     "db")
+          image=$dbImage
+          buildImage $dbSrc $dbImage
+          ;;
 
-docker push $registry/$wrImage
-docker push $registry/$rservImage
-docker push $registry/$frontendImage
-docker push $registry/$backendImage
-docker push $registry/$builderImage
-docker push $registry/$dbImage
-docker push $registry/$dqdImage
+     *)
+          echo "Parameter [$1] is not supported."
+          return -1
+          ;;
+  esac
 
+  echo [$image] was successfully built for [$env] environment. 
+  tagAndPush $image
+}
 
-docker logout
+setEnv $env
+build $1
+
