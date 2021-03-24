@@ -25,7 +25,7 @@ WORKDIR /azp
 COPY ./start.sh .
 RUN mkdir /root/.ssh
 COPY id_rsa id_rsa.pub /root/.ssh/
-COPY pullSources.sh .
+COPY * ./
 
 RUN chmod +x start.sh
 RUN curl -sSL https://get.docker.com/ | sh
