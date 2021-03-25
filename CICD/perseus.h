@@ -90,12 +90,12 @@ setEnv () {
 
    if [ "$env" != "prod" ]
    then
-     #backend="$backend"_dev
-     #builder=cdm-builder-service
-     #db=perseus-database
-     #dqd=dqd-service
-     #frontend=perseus-frontend
-     #rserv=r-serve
+     backend="$backend"_$env
+     builder="$builder"_$env
+     db="$db"_$env
+     dqd="$dqd"_$env
+     frontend="$frontend"_$env
+     rserv="$rserv"_$env
      wr="$wr"_$env
    fi
 }
