@@ -60,6 +60,7 @@ wr=white-rabbit-service
 
 setEnv () {
    env=$1
+   echo Setting environment [$env].
 
    if [ $env = "prod" ]
    then
@@ -85,5 +86,16 @@ setEnv () {
    else
       echo Parameter [$env] is not supported.
       return -1
+   fi
+
+   if [ "$env" != "prod" ]
+   then
+     #backend="$backend"_dev
+     #builder=cdm-builder-service
+     #db=perseus-database
+     #dqd=dqd-service
+     #frontend=perseus-frontend
+     #rserv=r-serve
+     wr="$wr"_$env
    fi
 }

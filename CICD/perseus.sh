@@ -5,7 +5,7 @@
 # Uninstall Perseus: perseus.sh uninstall
 # Start Perseus from images: perseus.sh start
 # Stop Perseus and delete containers: perseus.sh stop
-# Deploy a component: perseus.sh deploy componentName
+# Deploy a component: perseus.sh deploy componentName env
 # ComponentName can be wr, db, dqd, builder, frontend, backend, rserv
 # Deploy means that existing container will be stopped, removed, pulled from regustry and run.
 
@@ -16,7 +16,6 @@ source perseus.h
 # DECLARATIONS
 action=$1
 repoPwd=$(<repo_pwd)
-
 
 setImages () {
   backendImage=$registry/$backendImage
@@ -135,27 +134,37 @@ installPerseus () {
   echo Perseus was succefully installed.
 }
 
+setPerseusEnv () {
+ env=$1
+ setEnv $env
+ setImages
+}
+
 
 #MAIN
 
-setEnv prod
-setImages
-
 if [ $action = "install" ]
 then
+  setPerseusEnv prod
   installPerseus
   startPerseus
 elif [ $action = "start" ]
 then
+  setPerseusEnv prod
   startPerseus
 elif [ $action = "deploy" ]
 then
+  env=$3
+  setPerseusEnv $env
+
   component=$2
   compImage="$component"Image 
   compImage=${!compImage}
+
   deploy $compImage
   start  $component
 else
+  setPerseusEnv prod
   dockerAction $wrImage
   dockerAction $rservImage
   dockerAction $frontendImage
