@@ -4,6 +4,7 @@ branch=master
 #WhiteRabbit
 wrProdImage="white-rabbit-service"
 wrDevImage="white-rabbit-service"
+wrTestImage="white-rabbit-service_test"
 wrSrc=~/source/WhiteRabbit
 
 #RServ
@@ -78,6 +79,9 @@ setEnv () {
      frontendImage=$frontendDevImage
      rservImage=$rservDevImage
      wrImage=$wrDevImage
+   elif [ $env = "test" ]
+   then
+     wrImage=$wrTestImage
    else
       echo Parameter [$env] is not supported.
       return -1

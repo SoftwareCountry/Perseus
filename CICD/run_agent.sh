@@ -1,5 +1,5 @@
 #!/bin/bash
-pool="CDMDefault"
+pool=$1
 agentid="1"
 agentName="azure-agent-${agentid}-${pool}"
 docker rm -f $agentName
