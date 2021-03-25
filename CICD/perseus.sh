@@ -146,7 +146,7 @@ setPerseusEnv () {
 if [ -z "$action" ]
  then
    echo Empty action parameter.
-   return -1
+   exit -1
 fi
 
 
