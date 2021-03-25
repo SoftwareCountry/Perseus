@@ -143,6 +143,13 @@ setPerseusEnv () {
 
 #MAIN
 
+if [ -z "$action" ]
+ then
+   echo Empty action parameter.
+   return -1
+fi
+
+
 if [ $action = "install" ]
 then
   setPerseusEnv prod
