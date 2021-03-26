@@ -8,35 +8,41 @@ wrTestImage="white-rabbit-service_test"
 wrSrc=~/source/WhiteRabbit
 
 #RServ
-rservProdImage=r-serve
-rservDevImage=r-serve_dev
+rservProdImage="r-serve"
+rservDevImage="r-serve_dev"
+rservTestImage="r-serve_test"
 rservSrc=~/source/DataQualityDashboard/R
 
 #DQD
 dqdProdImage="dqd-service"
 dqdDevImage="dqd-service_dev"
+dqdTestImage="dqd-service_test"
 dqdSrc=~/source/DataQualityDashboard
 
 #Frontend
-frontendProdImage=perseus-frontend
-frontendStageImage=perseus-frontend_stage
-frontendDevImage=perseus-frontend_dev
+frontendProdImage="perseus-frontend"
+frontendStageImage="perseus-frontend_stage"
+frontendDevImage="perseus-frontend_dev"
+frontendTestImage="perseus-frontend_test"
 frontendSrc=~/source/Perseus/UI
 
 #Backend
 backendProdImage="perseus-backend"
 backendDevImage="perseus-backend_dev"
 backendStageImage="perseus-backend_stage"
+backendTestImage="perseus-test_test"
 backendSrc=~/source/Perseus
 
 #Builder
 builderProdImage="cdm-builder-service"
 builderDevImage="cdm-builder-service_dev"
+builderTestImage="cdm-builder-service_test"
 builderSrc=~/source/ETL-CDMBuilder
 
 #DB
-dbProdImage=perseus-database
-dbDevImage=perseus-database_dev
+dbProdImage="perseus-database"
+dbDevImage="perseus-database_dev"
+dbTestImage="perseus-database_test"
 dbSrc=~/source/Perseus/database
 
 setEnv () {
@@ -83,6 +89,12 @@ setEnv () {
      wrImage=$wrDevImage
    elif [ $env = "test" ]
    then
+     backendImage=$backendTestImage
+     builderImage=$builderTestImage
+     dbImage=$dbTestImage
+     dqdImage=$dqdTestImage
+     frontendImage=$frontendTestImage
+     rservImage=$rservTestImage
      wrImage=$wrTestImage
    else
       echo Parameter [$env] is not supported.
