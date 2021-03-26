@@ -27,7 +27,7 @@ RUN mkdir /root/.ssh
 COPY id_rsa id_rsa.pub /root/.ssh/
 COPY * ./
 
-RUN chmod +x start.sh
+RUN chmod +x start.sh && chmod 600 ~/.ssh/id_rsa && ssh-keyscan -H jnjcicdu1 >> ~/.ssh/known_hosts
 RUN curl -sSL https://get.docker.com/ | sh
 
 CMD ["./start.sh"]
