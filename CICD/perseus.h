@@ -30,7 +30,7 @@ frontendSrc=~/source/Perseus/UI
 backendProdImage="perseus-backend"
 backendDevImage="perseus-backend_dev"
 backendStageImage="perseus-backend_stage"
-backendTestImage="perseus-test_test"
+backendTestImage="perseus-backend_test"
 backendSrc=~/source/Perseus
 
 #Builder
