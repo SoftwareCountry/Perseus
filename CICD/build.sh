@@ -78,7 +78,7 @@ build () {
           buildRServ $rservdSrc $rservImage
           ;;
 
-     "cdmb")
+     "builder")
           image=$builderImage
           buildCDMBuilder $builderSrc $image
           ;;
