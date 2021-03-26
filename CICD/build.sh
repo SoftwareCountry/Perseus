@@ -75,7 +75,7 @@ build () {
 
      "rserv")
           image=$rservImage
-          buildRServ $rservdSrc $rservImage
+          buildRServ $rservSrc $rservImage
           ;;
 
      "builder")
