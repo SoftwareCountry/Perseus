@@ -39,26 +39,27 @@ dbProdImage=perseus-database
 dbDevImage=perseus-database_dev
 dbSrc=~/source/CDMSouffleur/database
 
-#Images
-backendImage=""
-builderImage=""
-dbImage=""
-dqdImage=""
-frontendImage=""
-rservImage=""
-wrImage=""
-
-#Services' names.
-backend=perseus-backend
-builder=cdm-builder-service
-db=perseus-database
-dqd=dqd-service
-frontend=perseus-frontend
-rserv=r-serve
-wr=white-rabbit-service
-
-
 setEnv () {
+
+  #Images
+  backendImage=""
+  builderImage=""
+  dbImage=""
+  dqdImage=""
+  frontendImage=""
+  rservImage=""
+  wrImage=""
+
+  #Services' names.
+  backend=perseus-backend
+  builder=cdm-builder-service
+  db=perseus-database
+  dqd=dqd-service
+  frontend=perseus-frontend
+  rserv=r-serve
+  wr=white-rabbit-service
+
+
    env=$1
    echo Setting environment [$env].
 
