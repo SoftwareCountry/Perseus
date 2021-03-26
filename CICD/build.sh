@@ -27,7 +27,7 @@ buildRServ () {
   echo [BuildRserv $1 $2 $branch $env]
   pullSrc $1 $branch
   image=$2
-  docker build -t $image --build-arg prop=$env .
+  docker build -t $image --build-arg prop=$dockerEnvProp .
 }
 
 buildCDMBuilder () {
@@ -41,7 +41,7 @@ buildDQD () {
   pullSrc $1 $branch
   chmod +x ./mvnw
   image=$2
-  docker build -t $image --build-arg prop=$env .
+  docker build -t $image --build-arg prop=$dockerEnvProp .
 }
 
 tagAndPush () {

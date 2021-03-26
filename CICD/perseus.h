@@ -47,28 +47,32 @@ dbSrc=~/source/Perseus/database
 
 setEnv () {
 
-  #Images
-  backendImage=""
-  builderImage=""
-  dbImage=""
-  dqdImage=""
-  frontendImage=""
-  rservImage=""
-  wrImage=""
+   #Images
+   backendImage=""
+   builderImage=""
+   dbImage=""
+   dqdImage=""
+   frontendImage=""
+   rservImage=""
+   wrImage=""
 
-  #Services' names.
-  backend=perseus-backend
-  builder=cdm-builder-service
-  db=perseus-database
-  dqd=dqd-service
-  frontend=perseus-frontend
-  rserv=r-serve
-  wr=white-rabbit-service
+   #Services' names.
+   backend="perseus-backend"
+   builder="cdm-builder-service"
+   db="perseus-database"
+   dqd="dqd-service"
+   frontend="perseus-frontend"
+   rserv="r-serve"
+   wr="white-rabbit-service" 
 
+   #Docker build props
+   $dockerEnvProp="dev"
 
    env=$1
+   dockerEnvProp=$env
    echo Setting environment [$env].
-
+   
+   
    if [ $env = "prod" ]
    then
      backendImage=$backendProdImage
@@ -96,6 +100,7 @@ setEnv () {
      frontendImage=$frontendTestImage
      rservImage=$rservTestImage
      wrImage=$wrTestImage
+     dockerEnvProp="dev"
    else
       echo Parameter [$env] is not supported.
       return -1
