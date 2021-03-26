@@ -66,7 +66,7 @@ setEnv () {
    wr="white-rabbit-service" 
 
    #Docker build props
-   $dockerEnvProp="dev"
+   dockerEnvProp="dev"
 
    env=$1
    dockerEnvProp=$env
