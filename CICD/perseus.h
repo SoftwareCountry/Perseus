@@ -21,13 +21,13 @@ dqdSrc=~/source/DataQualityDashboard
 frontendProdImage=perseus-frontend
 frontendStageImage=perseus-frontend_stage
 frontendDevImage=perseus-frontend_dev
-frontendSrc=~/source/CDMSouffleur/UI
+frontendSrc=~/source/Perseus/UI
 
 #Backend
 backendProdImage="perseus-backend"
 backendDevImage="perseus-backend_dev"
 backendStageImage="perseus-backend_stage"
-backendSrc=~/source/CDMSouffleur
+backendSrc=~/source/Perseus
 
 #Builder
 builderProdImage="cdm-builder-service"
@@ -37,7 +37,7 @@ builderSrc=~/source/ETL-CDMBuilder
 #DB
 dbProdImage=perseus-database
 dbDevImage=perseus-database_dev
-dbSrc=~/source/CDMSouffleur/database
+dbSrc=~/source/Perseus/database
 
 setEnv () {
 
