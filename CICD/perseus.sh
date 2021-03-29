@@ -76,7 +76,7 @@ updateImage () {
   docker rm $(docker stop $(docker ps -a -q --filter ancestor=$localImage)) || true
 
   docker login perseushub.arcadialab.ru -u="registryUser" -p="$repoPwd"
-  docker pull $image
+  docker pull $compImage
   docker logout perseushub.arcadialab.ru
 }
 
