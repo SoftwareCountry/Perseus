@@ -27,44 +27,38 @@ buildImage () {
 }
 
 buildFrontend () {
-  source=$1
-  image=$2
-  echo Build image: source=[$source] branch=[$frontendBranch] image=[$image]
-  pullSrc $source $frontendBranch
+  echo Build fronend image: source=[$frontendSource] branch=[$frontendBranch] image=[$frontendImage]
+  pullSrc $frontendSrc $frontendBranch
   
   if [ $env = "dev" ]
   then
-     docker build -t $devImage -f Dockerfile.dev .
+     docker build -t $frontendImage -f Dockerfile.dev .
   elif [ $env = "stage"]
   then
-     docker build -t $stageImage -f Dockerfile.stage .
+     docker build -t $frontendImage -f Dockerfile.stage .
   elif [ $env = "prod" ]
   then
-     docker build -t $prodImage . 
+     docker build -t $frontendImage . 
   fi
-
-  docker build -t $image .
 }
 
 buildRServ () {
-  echo [BuildRserv $1 $2 $branch $env]
-  pullSrc $1 $defaultBranch
-  image=$2
-  docker build -t $image --build-arg prop=$dockerEnvProp .
+  echo Building RServe image=[$rservImage]
+  pullSrc $rservSrc $defaultBranch
+  docker build -t $rservImage --build-arg prop=$dockerEnvProp .
 }
 
 buildCDMBuilder () {
-  pullSrc $1 $defaultBranch
-  image=$2
-  docker build -f "source/org.ohdsi.cdm.presentation.builderwebapi/Dockerfile" -t $image .
+  echo Building CDM Builder image=[$builderImage]
+  pullSrc $builderSrc $defaultBranch
+  docker build -f "source/org.ohdsi.cdm.presentation.builderwebapi/Dockerfile" -t $builderImage .
 }
 
-
 buildDQD () {
-  pullSrc $1 $defaultBranch
+  echo Building DQD image=[$dqdImage]
+  pullSrc $dqdSrc $defaultBranch
   chmod +x ./mvnw
-  image=$2
-  docker build -t $image --build-arg prop=$dockerEnvProp .
+  docker build -t $dqdImage --build-arg prop=$dockerEnvProp .
 }
 
 tagAndPush () {
@@ -84,26 +78,22 @@ build () {
           buildImage $wrSrc $image $defaultBranch
           ;;
      "dqd")
-          image=$dqdImage
-          buildDQD $dqdSrc $image
+          buildDQD
           ;;
      "backend")
           image=$backendImage
           buildImage $backendSrc $image $backendBranch
           ;; 
      "frontend")
-          image=$frontendImage
-          buildFrontend $frontendSrc $image
+          buildFrontend 
           ;;
 
      "rserv")
-          image=$rservImage
-          buildRServ $rservSrc $rservImage 
+          buildRServ
           ;;
 
      "builder")
-          image=$builderImage
-          buildCDMBuilder $builderSrc $image
+          buildCDMBuilder
           ;;
 
      "db")
