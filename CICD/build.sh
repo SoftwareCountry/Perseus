@@ -11,34 +11,37 @@ source perseus.h
 env=$2
 
 pullSrc (){
-  echo [cd to $1]
+  echo Pulling sources from branch=[$2]
   cd $1
   git checkout $2
   git pull
 }
 
 buildImage () {
-  pullSrc $1 $branch
+  source=$1
+  branch=$3
   image=$2
+  echo Build image: source=[$source] branch=[$branch] image=[$image]
+  pullSrc $source $branch
   docker build -t $image .
 }
 
 buildRServ () {
   echo [BuildRserv $1 $2 $branch $env]
-  pullSrc $1 $branch
+  pullSrc $1 $defaultBranch
   image=$2
   docker build -t $image --build-arg prop=$dockerEnvProp .
 }
 
 buildCDMBuilder () {
-  pullSrc $1 $branch
+  pullSrc $1 $defaultBranch
   image=$2
   docker build -f "source/org.ohdsi.cdm.presentation.builderwebapi/Dockerfile" -t $image .
 }
 
 
 buildDQD () {
-  pullSrc $1 $branch
+  pullSrc $1 $defaultBranch
   chmod +x ./mvnw
   image=$2
   docker build -t $image --build-arg prop=$dockerEnvProp .
@@ -58,7 +61,7 @@ build () {
   case $comp in
      "wr")
           image=$wrImage
-          buildImage $wrSrc $image
+          buildImage $wrSrc $image $defaultBranch
           ;;
      "dqd")
           image=$dqdImage
@@ -66,16 +69,16 @@ build () {
           ;;
      "backend")
           image=$backendImage
-          buildImage $backendSrc $image
+          buildImage $backendSrc $image $backendBranch
           ;; 
      "frontend")
           image=$frontendImage
-          buildImage $frontendSrc $image
+          buildImage $frontendSrc $image $frontendBranch
           ;;
 
      "rserv")
           image=$rservImage
-          buildRServ $rservSrc $rservImage
+          buildRServ $rservSrc $rservImage 
           ;;
 
      "builder")
@@ -85,7 +88,7 @@ build () {
 
      "db")
           image=$dbImage
-          buildImage $dbSrc $dbImage
+          buildImage $dbSrc $dbImage $defaultBranch
           ;;
 
      *)

@@ -1,21 +1,26 @@
+
 registry=perseushub.arcadialab.ru
-branch=master
+
+devBranch="development"
+masterBranch="master"
+stageBranch="staging"
+
+frontendBranch=$devBranch
+backendBranch=$devBranch
+defaultBranch=$devBranch
 
 #WhiteRabbit
 wrProdImage="white-rabbit-service"
-wrDevImage="white-rabbit-service"
 wrTestImage="white-rabbit-service_test"
 wrSrc=~/source/WhiteRabbit
 
 #RServ
 rservProdImage="r-serve"
-rservDevImage="r-serve_dev"
 rservTestImage="r-serve_test"
 rservSrc=~/source/DataQualityDashboard/R
 
 #DQD
 dqdProdImage="dqd-service"
-dqdDevImage="dqd-service_dev"
 dqdTestImage="dqd-service_test"
 dqdSrc=~/source/DataQualityDashboard
 
@@ -71,8 +76,7 @@ setEnv () {
    env=$1
    dockerEnvProp=$env
    echo Setting environment [$env].
-   
-   
+
    if [ $env = "prod" ]
    then
      backendImage=$backendProdImage
@@ -82,15 +86,34 @@ setEnv () {
      frontendImage=$frontendProdImage
      rservImage=$rservProdImage
      wrImage=$wrProdImage
+
+     frontendBranch=$masterBranch
+     backendBranch=$masterBranch
+     defaultBranch=$masterBranch
+
    elif [ $env = "dev" ]
    then
      backendImage=$backendDevImage
      builderImage=$builderDevImage
      dbImage=$dbDevImage
-     dqdImage=$dqdDevImage
+     dqdImage=$dqdProdImage
      frontendImage=$frontendDevImage
-     rservImage=$rservDevImage
-     wrImage=$wrDevImage
+     rservImage=$rservProdImage
+     wrImage=$wrProdImage
+
+   elif [ $env = "stage" ]
+   then
+     backendImage=$backendStageImage
+     builderImage=$builderDevImage
+     dbImage=$dbDevImage
+     dqdImage=$dqdProdImage
+     frontendImage=$frontendStageImage
+     rservImage=$rservProdImage
+     wrImage=$wrProdImage
+
+     frontendBranch=$stageBranch
+     backendBranch=$stageBranch
+
    elif [ $env = "test" ]
    then
      backendImage=$backendTestImage

@@ -53,9 +53,9 @@ dockerAction () {
 
 }
 
-deploy () {
+updateImage () {
   image=$1
-  echo Deploy image [$image].
+  echo Update image [$image].
 
   docker rm $(docker stop $(docker ps -a -q --filter ancestor=$image)) || true
 
@@ -67,30 +67,37 @@ deploy () {
 start () {
  
   comp=$1
-  echo Start [$comp].
+  image=""
   case $comp in
      "wr")
+          image=$wrImage 
           docker run --name $wr -d --network host $wrImage
           ;;
      "dqd")
+          image=$dqdImage
           docker run -d --network host --name $dqd $dqdImage
           ;;
      "backend")
+          image=$backendImage
           docker run -e CDM_SOUFFLEUR_ENV='default' --name $backend -d --network host $backendImage
           ;;
      "frontend")
+          image=$frontendImage
           docker run --name $frontend -d --network host $frontendImage
           ;;
 
      "rserv")
+          image=$rservImage
           docker run -d --network host --name $rserv -p 6311:6311 $rservImage
           ;;
 
      "builder")
+          image=$builderImage
           docker run -d --network host --name $builder $builderImage
           ;;
 
      "db")
+          image=$dbImage
           docker run --name $db -d -p 5431:5432 $dbImage
           ;;
      *)
@@ -98,6 +105,8 @@ start () {
           return -1
           ;;
   esac
+
+  echo [$comp] was started from image [$image].
 }
 
 startPerseus () {
@@ -168,7 +177,7 @@ then
   compImage="$component"Image 
   compImage=${!compImage}
 
-  deploy $compImage
+  updateImage $compImage
   start  $component
 else
   setPerseusEnv prod
