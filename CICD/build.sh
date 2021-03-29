@@ -78,6 +78,7 @@ build () {
           buildImage $wrSrc $image $defaultBranch
           ;;
      "dqd")
+          image=$dqdImage
           buildDQD
           ;;
      "backend")
@@ -85,14 +86,17 @@ build () {
           buildImage $backendSrc $image $backendBranch
           ;; 
      "frontend")
+          image=$frontendImage
           buildFrontend 
           ;;
 
      "rserv")
+          image=$rservImage
           buildRServ
           ;;
 
      "builder")
+          image=$builderImage
           buildCDMBuilder
           ;;
 
