@@ -72,9 +72,9 @@ setEnv () {
 
    #Docker build props
    dockerEnvProp="dev"
+   cdmSouffleurEnv="default"
 
    env=$1
-   dockerEnvProp=$env
    echo Setting environment [$env].
 
    if [ $env = "prod" ]
@@ -91,6 +91,8 @@ setEnv () {
      backendBranch=$masterBranch
      defaultBranch=$masterBranch
 
+     dockerEnvProp="prod"
+
    elif [ $env = "dev" ]
    then
      backendImage=$backendDevImage
@@ -100,6 +102,8 @@ setEnv () {
      frontendImage=$frontendDevImage
      rservImage=$rservProdImage
      wrImage=$wrProdImage
+
+     cdmSouffleurEnv="development"
 
    elif [ $env = "stage" ]
    then
@@ -123,7 +127,9 @@ setEnv () {
      frontendImage=$frontendTestImage
      rservImage=$rservTestImage
      wrImage=$wrTestImage
+ 
      dockerEnvProp="dev"
+     cdmSouffleurEnv="development"
    else
       echo Parameter [$env] is not supported.
       return -1
@@ -132,11 +138,12 @@ setEnv () {
    if [ "$env" != "prod" ]
    then
      backend="$backend"_$env
-     builder="$builder"_$env
-     db="$db"_$env
-     dqd="$dqd"_$env
      frontend="$frontend"_$env
-     rserv="$rserv"_$env
-     wr="$wr"_$env
    fi
+
+   if [ "$env" = "dev" ] || [ "$env" = "stage" ]
+   then
+     db="$db"_"dev"
+   fi
+
 }

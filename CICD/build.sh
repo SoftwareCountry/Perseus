@@ -26,6 +26,26 @@ buildImage () {
   docker build -t $image .
 }
 
+buildFrontend () {
+  source=$1
+  image=$2
+  echo Build image: source=[$source] branch=[$frontendBranch] image=[$image]
+  pullSrc $source $frontendBranch
+  
+  if [ $env = "dev" ]
+  then
+     docker build -t $devImage -f Dockerfile.dev .
+  elif [ $env = "stage"]
+  then
+     docker build -t $stageImage -f Dockerfile.stage .
+  elif [ $env = "prod" ]
+  then
+     docker build -t $prodImage . 
+  fi
+
+  docker build -t $image .
+}
+
 buildRServ () {
   echo [BuildRserv $1 $2 $branch $env]
   pullSrc $1 $defaultBranch
@@ -73,7 +93,7 @@ build () {
           ;; 
      "frontend")
           image=$frontendImage
-          buildImage $frontendSrc $image $frontendBranch
+          buildFrontend $frontendSrc $image
           ;;
 
      "rserv")

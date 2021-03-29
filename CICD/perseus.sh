@@ -79,7 +79,7 @@ start () {
           ;;
      "backend")
           image=$backendImage
-          docker run -e CDM_SOUFFLEUR_ENV='default' --name $backend -d --network host $backendImage
+          docker run -e CDM_SOUFFLEUR_ENV=$cdmSouffleurEnv --name $backend -d --network host $backendImage
           ;;
      "frontend")
           image=$frontendImage
