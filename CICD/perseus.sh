@@ -18,6 +18,15 @@ action=$1
 repoPwd=$(<repo_pwd)
 
 setImages () {
+
+  _backendImage=$backendImage
+  _builderImage=$builderImage
+  _dbImage=$dbImage
+  _dqdImage=$dqdImage
+  _frontendImage=$frontendImage
+  _rservImage=$rservImage
+  _wrImage=$wrImage
+
   backendImage=$registry/$backendImage
   builderImage=$registry/$builderImage
   dbImage=$registry/$dbImage
@@ -54,10 +63,17 @@ dockerAction () {
 }
 
 updateImage () {
-  image=$1
-  echo Update image [$image].
+  component=$1
 
-  docker rm $(docker stop $(docker ps -a -q --filter ancestor=$image)) || true
+  compImage="$component"Image
+  compImage=${!compImage}
+
+  localImage=_"$component"Image
+  localImage=${!localImage}
+
+  echo Updating images: [$compImage] and [$localImage].
+  docker rm $(docker stop $(docker ps -a -q --filter ancestor=$compImage)) || true
+  docker rm $(docker stop $(docker ps -a -q --filter ancestor=$localImage)) || true
 
   docker login perseushub.arcadialab.ru -u="registryUser" -p="$repoPwd"
   docker pull $image
@@ -171,13 +187,10 @@ then
 elif [ $action = "deploy" ]
 then
   env=$3
-  setPerseusEnv $env
-
   component=$2
-  compImage="$component"Image 
-  compImage=${!compImage}
 
-  updateImage $compImage
+  setPerseusEnv $env
+  updateImage $component 
   start  $component
 else
   setPerseusEnv prod
