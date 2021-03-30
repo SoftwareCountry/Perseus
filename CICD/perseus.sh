@@ -65,18 +65,18 @@ dockerAction () {
 updateImage () {
   component=$1
 
-  compImage="$component"Image
-  compImage=${!compImage}
+  repoImage="$component"Image
+  repoImage=${!compImage}
 
   localImage=_"$component"Image
   localImage=${!localImage}
 
   echo Updating images: [$compImage] and [$localImage].
-  docker rm $(docker stop $(docker ps -a -q --filter ancestor=$compImage)) || true
+  docker rm $(docker stop $(docker ps -a -q --filter ancestor=$repoImage)) || true
   docker rm $(docker stop $(docker ps -a -q --filter ancestor=$localImage)) || true
 
   docker login perseushub.arcadialab.ru -u="registryUser" -p="$repoPwd"
-  docker pull $compImage
+  docker pull $repoImage
   docker logout perseushub.arcadialab.ru
 }
 
