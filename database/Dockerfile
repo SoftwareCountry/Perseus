@@ -9,3 +9,4 @@ COPY init.sql /docker-entrypoint-initdb.d/
 
 ENV POSTGRES_DB cdm_souffleur
 ENV POSTGRES_PASSWORD 5eC_DkMr^3
+ENV VOCABULARY_URL="https://athena.ohdsi.org/api/v1/vocabularies/zip/0f85a705-2000-4934-8b1a-5dcb77492071"
