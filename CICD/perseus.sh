@@ -66,12 +66,12 @@ updateImage () {
   component=$1
 
   repoImage="$component"Image
-  repoImage=${!compImage}
+  repoImage=${!repoImage}
 
   localImage=_"$component"Image
   localImage=${!localImage}
 
-  echo Updating images: [$compImage] and [$localImage].
+  echo Updating images: [$repoImage] and [$localImage].
   docker rm $(docker stop $(docker ps -a -q --filter ancestor=$repoImage)) || true
   docker rm $(docker stop $(docker ps -a -q --filter ancestor=$localImage)) || true
 
@@ -148,13 +148,13 @@ installPerseus () {
   fi
 
   echo Installing Perseus.
-  deploy $builderImage
-  deploy $dbImage
-  deploy $dqdImage
-  deploy $wrImage
-  deploy $rservImage
-  deploy $backendImage
-  deploy $frontendImage
+  updateImage builder
+  updateImage db
+  updateImage dqd
+  updateImage wr
+  updateImage rserv
+  updateImage backend
+  updateImage frontend
 
   echo Perseus was succefully installed.
 }
