@@ -33,7 +33,7 @@ buildFrontend () {
   if [ $env = "dev" ]
   then
      docker build -t $frontendImage -f Dockerfile.dev .
-  elif [ $env = "stage"]
+  elif [ $env = "stage" ]
   then
      docker build -t $frontendImage -f Dockerfile.stage .
   elif [ $env = "prod" ]
