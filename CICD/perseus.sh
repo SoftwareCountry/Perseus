@@ -101,7 +101,7 @@ start () {
           ;;
      "frontend")
           image=$frontendImage
-          docker run -e SERVER=$frontServer DB_SERVER=$frontDBServer --name $frontend -d --network host $frontendImage
+          docker run -e SERVER=$frontServer -e DB_SERVER=$frontDBServer --name $frontend -d --network host $frontendImage
           ;;
 
      "rserv")
