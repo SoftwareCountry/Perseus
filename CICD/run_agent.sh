@@ -11,7 +11,7 @@ docker run \
   -P \
   --name $agentName \
   -e AZP_URL="https://dev.azure.com/Arcadia-Internal-CDM" \
-  -e AZP_TOKEN="rhqmxukos4rgeflgvf6nufzurk2nj3hlmys2qg32fwenkaw2l2ra" \
+  -e AZP_TOKEN="" \
   -e AZP_AGENT_NAME="$(hostname)-agent-${agentid}-${pool}" \
   -e AZP_POOL="${pool}" \
   -e AZP_WORK='/var/vsts/$AZP_AGENT_NAME' \
