@@ -4,6 +4,7 @@
 # $2 - env (dev, prod)
 
 set -e
+set -x
 
 source perseus.h
 

@@ -10,6 +10,7 @@
 # Deploy means that existing container will be stopped, removed, pulled from regustry and run.
 
 set -e
+set -x
 
 source perseus.h
 
@@ -91,6 +92,7 @@ start () {
           ;;
      "dqd")
           image=$dqdImage
+
           docker run -d --network host --name $dqd $dqdImage
           ;;
      "backend")
@@ -99,7 +101,7 @@ start () {
           ;;
      "frontend")
           image=$frontendImage
-          docker run --name $frontend -d --network host $frontendImage
+          docker run -env SERVER=$frontServer DB_SERVER=$frontDBServer --name $frontend -d --network host $frontendImage
           ;;
 
      "rserv")

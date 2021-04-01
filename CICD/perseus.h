@@ -73,6 +73,8 @@ setEnv () {
    #Docker build props
    dockerEnvProp="dev"
    cdmSouffleurEnv="default"
+   frontServer="10.110.1.7"
+   frontDBServer="10.110.1.7"
 
    env=$1
    echo Setting environment [$env].
@@ -92,6 +94,8 @@ setEnv () {
      defaultBranch=$masterBranch
 
      dockerEnvProp="prod"
+     frontServer="185.134.75.47"
+     frontDBServer="192.168.20.47"
 
    elif [ $env = "dev" ]
    then
