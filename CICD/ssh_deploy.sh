@@ -16,3 +16,4 @@ fi
 
 echo Deploy [$component] to [$host] with user [$sshUser], env=[$env]. 
 tar cf - perseus.sh perseus.h repo_pwd | ssh "$sshUser"@"$host" "tar xf -; bash -x -e perseus.sh deploy $component $env"
+echo [$component] was succefully deployed to [$host] with user [$sshUser], env=[$env].

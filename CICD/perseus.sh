@@ -79,6 +79,7 @@ updateImage () {
   docker login perseushub.arcadialab.ru -u="registryUser" -p="$repoPwd"
   docker pull $repoImage
   docker logout perseushub.arcadialab.ru
+  echo $repoImage was pulled from the repository.
 }
 
 start () {
@@ -92,7 +93,6 @@ start () {
           ;;
      "dqd")
           image=$dqdImage
-
           docker run -d --network host --name $dqd $dqdImage
           ;;
      "backend")
@@ -182,10 +182,12 @@ then
   setPerseusEnv prod
   installPerseus
   startPerseus
+  echo "Perseus was successfully installed and started."
 elif [ $action = "start" ]
 then
   setPerseusEnv prod
   startPerseus
+  echo "Perseus was successfully started."
 elif [ $action = "deploy" ]
 then
   env=$3
@@ -194,6 +196,7 @@ then
   setPerseusEnv $env
   updateImage $component 
   start  $component
+  echo "[$component] was successfully deployed."
 else
   setPerseusEnv prod
   dockerAction $wrImage
@@ -203,6 +206,7 @@ else
   dockerAction $builderImage
   dockerAction $dbImage
   dockerAction $backendImage
+  echo "Action [$action] was successfully done."
 fi
 
 bEnd=$(date +"%T")
