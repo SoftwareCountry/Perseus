@@ -4,6 +4,7 @@ registry=perseushub.arcadialab.ru
 devBranch="development"
 masterBranch="master"
 stageBranch="staging"
+currentBranch=""
 
 frontendBranch=$devBranch
 backendBranch=$devBranch
@@ -60,6 +61,7 @@ setEnv () {
    frontendImage=""
    rservImage=""
    wrImage=""
+   currentImage=""
 
    #Services' names.
    backend="perseus-backend"

@@ -12,9 +12,12 @@ source perseus.h
 env=$2
 
 pullSrc (){
-  echo Pulling sources from branch=[$2]
-  cd $1
-  git checkout $2
+  sourcesPath=$1
+  branch=$2
+  currentBranch=$branch
+  echo Pulling sources from branch=[$branch]
+  cd $sourcesPath
+  git checkout $branch
   git pull
 }
 
@@ -114,6 +117,7 @@ build () {
 
   echo [$image] was successfully built for [$env] environment. 
   tagAndPush $image
+  currentImage=$image
 }
 
 setEnv $env
