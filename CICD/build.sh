@@ -46,6 +46,12 @@ buildFrontend () {
   fi
 }
 
+buildDB () {
+  echo Building DB image=[$dbImage], vocabulary url=[$vocabularyUrl]
+  pullSrc $dbSrc $defaultBranch
+  docker build -t $dbImage --build-arg voc_url=$vocabularyUrl .
+}
+
 buildRServ () {
   echo Building RServe image=[$rservImage]
   pullSrc $rservSrc $defaultBranch
@@ -106,7 +112,7 @@ build () {
 
      "db")
           image=$dbImage
-          buildImage $dbSrc $dbImage $defaultBranch
+          buildDB
           ;;
 
      *)

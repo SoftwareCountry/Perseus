@@ -50,9 +50,10 @@ dbProdImage="perseus-database"
 dbDevImage="perseus-database_dev"
 dbTestImage="perseus-database_test"
 dbSrc=~/source/Perseus/database
+vocabularyUrl=$VOCABULARY
 
 setEnv () {
-
+   echo Voc=[$vocabularyUrl]
    #Images
    backendImage=""
    builderImage=""
