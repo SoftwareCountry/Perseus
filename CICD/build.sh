@@ -16,7 +16,7 @@ pullSrc (){
   branch=$2
   currentBranch=$branch
   echo Pulling sources from branch=[$branch]
-  cd $sourcesPath
+  cd "${sourcesPath}"
   git checkout $branch
   git pull
 }

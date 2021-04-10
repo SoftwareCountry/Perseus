@@ -1,5 +1,6 @@
 
 registry=perseushub.arcadialab.ru
+buildSourcesDir=${BUILD_SOURCESDIRECTORY}
 
 devBranch="development"
 masterBranch="master"
@@ -13,7 +14,7 @@ defaultBranch=$devBranch
 #WhiteRabbit
 wrProdImage="white-rabbit-service"
 wrTestImage="white-rabbit-service_test"
-wrSrc=~/source/WhiteRabbit
+wrSrc=$buildSourcesDir
 
 #RServ
 rservProdImage="r-serve"
@@ -30,14 +31,14 @@ frontendProdImage="perseus-frontend"
 frontendStageImage="perseus-frontend_stage"
 frontendDevImage="perseus-frontend_dev"
 frontendTestImage="perseus-frontend_test"
-frontendSrc=~/source/Perseus/UI
+frontendSrc=$buildSourcesDir/UI
 
 #Backend
 backendProdImage="perseus-backend"
 backendDevImage="perseus-backend_dev"
 backendStageImage="perseus-backend_stage"
 backendTestImage="perseus-backend_test"
-backendSrc=~/source/Perseus
+backendSrc=$buildSourcesDir
 
 #Builder
 builderProdImage="cdm-builder-service"
@@ -49,11 +50,14 @@ builderSrc=~/source/ETL-CDMBuilder
 dbProdImage="perseus-database"
 dbDevImage="perseus-database_dev"
 dbTestImage="perseus-database_test"
-dbSrc=~/source/Perseus/database
+dbSrc=$buildSourcesDir/database
 vocabularyUrl=$VOCABULARY
 
 setEnv () {
-   echo Voc=[$vocabularyUrl]
+
+   echo VocabularyUrl=[$vocabularyUrl]
+   echo build sources=[$buildSourcesDir]
+
    #Images
    backendImage=""
    builderImage=""
