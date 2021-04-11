@@ -1,0 +1,5 @@
+FROM postgres
+
+ENV POSTGRES_DB cdm_souffleur
+ENV POSTGRES_PASSWORD 5eC_DkMr^3
+
