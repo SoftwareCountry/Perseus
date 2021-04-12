@@ -1,3 +1,4 @@
+# Project defines.
 
 registry=perseushub.arcadialab.ru
 buildSourcesDir=${BUILD_SOURCESDIRECTORY}
