@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { authInjector } from '../../services/auth/auth-injector';
 import { AuthService } from '../../services/auth/auth.service';
 import { Router } from '@angular/router';
@@ -7,6 +7,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { parseHttpError } from '../../services/utilites/error';
 import { nameRegex, passwordRegex } from '../auxiliary/regexes';
 import { configurePasswordFormControls } from '../auxiliary/password-form-controls';
+import { AuthStateService } from '../auth-state.service';
 
 @Component({
   selector: 'app-sign-out',
@@ -16,12 +17,13 @@ import { configurePasswordFormControls } from '../auxiliary/password-form-contro
     '../auth.component.scss'
   ]
 })
-export class SignOutComponent extends AuthComponent {
+export class SignOutComponent extends AuthComponent implements OnInit, OnDestroy {
 
   private accountCreated = false;
 
   constructor(@Inject(authInjector) authService: AuthService,
-              router: Router) {
+              router: Router,
+              private authStateService: AuthStateService) {
     super(authService, router)
   }
 
@@ -47,6 +49,16 @@ export class SignOutComponent extends AuthComponent {
 
   get accountNotCreated() {
     return !this.accountCreated
+  }
+
+  ngOnInit() {
+    super.ngOnInit();
+    this.accountCreated = !!this.authStateService.state
+  }
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
+    this.authStateService.state = null
   }
 
   submit(): void {

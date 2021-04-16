@@ -7,6 +7,7 @@ import { HttpClient } from '@angular/common/http';
 import { apiUrl, loginRouter } from '../../app.constants';
 import { tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
+import { LinkType } from '../../auth/link-expired/link-expired.component';
 
 @Injectable({
   providedIn: 'root'
@@ -61,5 +62,9 @@ export class JwtAuthService implements AuthService {
 
   reset(password: string, token: string): Observable<void> {
     return this.httpClient.post<void>(`${apiUrl}/reset-password`, {password, token})
+  }
+
+  resetLink(email: string, linkType: LinkType): Observable<void> {
+    return this.httpClient.post<void>(`${apiUrl}/resend_activation_link`, {email, linkType})
   }
 }

@@ -1,10 +1,11 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { AuthComponent } from '../auth.component';
 import { authInjector } from '../../services/auth/auth-injector';
 import { AuthService } from '../../services/auth/auth.service';
 import { Router } from '@angular/router';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { parseHttpError } from '../../services/utilites/error';
+import { AuthStateService } from '../auth-state.service';
 
 @Component({
   selector: 'app-recover-password',
@@ -14,12 +15,13 @@ import { parseHttpError } from '../../services/utilites/error';
     '../auth.component.scss'
   ]
 })
-export class RecoverPasswordComponent extends AuthComponent {
+export class RecoverPasswordComponent extends AuthComponent implements OnInit, OnDestroy {
 
   restored = false
 
   constructor(@Inject(authInjector) authService: AuthService,
-              router: Router) {
+              router: Router,
+              private authStateService: AuthStateService) {
     super(authService, router)
   }
 
@@ -29,6 +31,16 @@ export class RecoverPasswordComponent extends AuthComponent {
 
   get notRestored() {
     return !this.restored
+  }
+
+  ngOnInit() {
+    super.ngOnInit();
+    this.restored = !!this.authStateService.state
+  }
+
+  ngOnDestroy() {
+    super.ngOnDestroy();
+    this.authStateService.state = null
   }
 
   submit(): void {

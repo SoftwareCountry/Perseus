@@ -4,6 +4,7 @@ import { User } from '../../models/user';
 import { AuthService, localStorageUserField } from './auth.service';
 import { Observable } from 'rxjs/internal/Observable';
 import { delay, tap } from 'rxjs/operators';
+import { LinkType } from '../../auth/link-expired/link-expired.component';
 
 @Injectable({
   providedIn: 'root'
@@ -59,6 +60,10 @@ export class FakeAuthService implements AuthService {
   }
 
   reset(password: string, token: string): Observable<void> {
+    return of(null).pipe(delay(this.delay))
+  }
+
+  resetLink(email: string, linkType: LinkType): Observable<void> {
     return of(null).pipe(delay(this.delay))
   }
 }

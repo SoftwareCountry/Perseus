@@ -9,11 +9,11 @@ import { Injectable } from '@angular/core';
 export class AuthStateService {
   private authState: any
 
-  get state(): string {
+  get state(): any {
     return this.authState
   }
 
-  set state(state: string) {
+  set state(state: any) {
     this.authState = state
   }
 }

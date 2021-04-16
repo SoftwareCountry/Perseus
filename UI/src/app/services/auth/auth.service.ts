@@ -1,5 +1,6 @@
 import { User } from '../../models/user';
 import { Observable } from 'rxjs/internal/Observable';
+import { LinkType } from '../../auth/link-expired/link-expired.component';
 
 export interface AuthService {
 
@@ -16,6 +17,8 @@ export interface AuthService {
   recoverPassword(email: string): Observable<void>;
 
   reset(password: string, token: string): Observable<void>;
+
+  resetLink(email: string, linkType: LinkType): Observable<void>;
 }
 
 export const localStorageUserField = 'currentUser'

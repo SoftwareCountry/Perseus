@@ -86,7 +86,7 @@ export const fakeDataDbSettings: DbSettings = {
   database: 'cdm_souffleur',
   user: 'postgres',
   password: '5eC_DkMr^3',
-  schema: 'public',
+  schema: 'TEST',
   port: 5431
 };
 
