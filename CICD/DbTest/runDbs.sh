@@ -7,7 +7,7 @@
 set -e
 set -x
 
-postgresImage=postgres-test
+postgresImage=postgres
 postgresDb=postgresTest
 
 mssqlDb=mssqlTest
@@ -15,18 +15,16 @@ mssqlImage="mcr.microsoft.com/mssql/server:2017-latest"
 
 mysqlImage="mysql:5.7"
 mysqlDb=mysqlTest
-dbPass="vasjdhv45#"
+dbPass="vasjDHnv45#"
 
 # Cleanup
 docker rm $(docker stop $(docker ps -a -q --filter ancestor=$postgresImage)) || true
 docker rm $(docker stop $(docker ps -a -q --filter ancestor=$mssqlImage)) || true
 docker rm $(docker stop $(docker ps -a -q --filter ancestor=$mysqlImage)) || true
 
-# Build
-docker build -t $postgresImage -f Dockerfile_Postgres  .
-
 # Run
-docker run --name $postgresDb -d -p 5431:5432 $postgresImage
-docker run --name $mssqlDb -e 'ACCEPT_EULA=Y' -e SA_PASSWORD=$dbPass -p 1433:1433 -d $mssqlImage
-docker run -p 3306:3306 --name $mysqlDb -e MYSQL_ROOT_PASSWORD=$dbPass -d $mysqlImage
+
+docker run --name $postgresDb -e POSTGRES_DB=cdm_souffleur -e POSTGRES_PASSWORD=$dbPass -p 5432:5432 -d --restart unless-stopped $postgresImage
+docker run --name $mssqlDb -e 'ACCEPT_EULA=Y' -e SA_PASSWORD=$dbPass -p 1433:1433 -d --restart unless-stopped $mssqlImage
+docker run -p 3306:3306 --name $mysqlDb -e MYSQL_ROOT_PASSWORD=$dbPass -d --restart unless-stopped $mysqlImage
 
