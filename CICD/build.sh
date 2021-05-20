@@ -12,9 +12,12 @@ source perseus.h
 env=$2
 
 pullSrc (){
-  echo Pulling sources from branch=[$2]
-  cd $1
-  git checkout $2
+  sourcesPath=$1
+  branch=$2
+  currentBranch=$branch
+  echo Pulling sources from branch=[$branch]
+  cd "${sourcesPath}"
+  git checkout $branch
   git pull
 }
 
@@ -41,6 +44,12 @@ buildFrontend () {
   then
      docker build -t $frontendImage . 
   fi
+}
+
+buildDB () {
+  echo Building DB image=[$dbImage], vocabulary url=[$vocabularyUrl]
+  pullSrc $dbSrc $defaultBranch
+  docker build -t $dbImage --build-arg voc_url=$vocabularyUrl .
 }
 
 buildRServ () {
@@ -103,7 +112,7 @@ build () {
 
      "db")
           image=$dbImage
-          buildImage $dbSrc $dbImage $defaultBranch
+          buildDB
           ;;
 
      *)
@@ -114,6 +123,7 @@ build () {
 
   echo [$image] was successfully built for [$env] environment. 
   tagAndPush $image
+  currentImage=$image
 }
 
 setEnv $env

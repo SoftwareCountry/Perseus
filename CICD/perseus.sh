@@ -79,6 +79,7 @@ updateImage () {
   docker login perseushub.arcadialab.ru -u="registryUser" -p="$repoPwd"
   docker pull $repoImage
   docker logout perseushub.arcadialab.ru
+  echo $repoImage was pulled from the repository.
 }
 
 start () {
@@ -88,35 +89,34 @@ start () {
   case $comp in
      "wr")
           image=$wrImage 
-          docker run --name $wr -d --network host $wrImage
+          docker run --name $wr -d --network host --restart unless-stopped $wrImage
           ;;
      "dqd")
           image=$dqdImage
-
-          docker run -d --network host --name $dqd $dqdImage
+          docker run -d --network host --name $dqd --restart unless-stopped $dqdImage
           ;;
      "backend")
           image=$backendImage
-          docker run -e CDM_SOUFFLEUR_ENV=$cdmSouffleurEnv --name $backend -d --network host $backendImage
+          docker run -e CDM_SOUFFLEUR_ENV=$cdmSouffleurEnv --name $backend -d --network host --restart unless-stopped $backendImage
           ;;
      "frontend")
           image=$frontendImage
-          docker run -env SERVER=$frontServer DB_SERVER=$frontDBServer --name $frontend -d --network host $frontendImage
+          docker run -e SERVER=$frontServer -e DB_SERVER=$frontDBServer --name $frontend -d --network host --restart unless-stopped $frontendImage
           ;;
 
      "rserv")
           image=$rservImage
-          docker run -d --network host --name $rserv -p 6311:6311 $rservImage
+          docker run -d --network host --name $rserv -p 6311:6311 --restart unless-stopped $rservImage
           ;;
 
      "builder")
           image=$builderImage
-          docker run -d --network host --name $builder $builderImage
+          docker run -d --network host --name $builder --restart unless-stopped $builderImage
           ;;
 
      "db")
           image=$dbImage
-          docker run --name $db -d -p 5431:5432 $dbImage
+          docker run --name $db -d -p 5431:5432 --restart unless-stopped $dbImage
           ;;
      *)
           echo "Parameter [$1] is not supported."
@@ -182,10 +182,12 @@ then
   setPerseusEnv prod
   installPerseus
   startPerseus
+  echo "Perseus was successfully installed and started."
 elif [ $action = "start" ]
 then
   setPerseusEnv prod
   startPerseus
+  echo "Perseus was successfully started."
 elif [ $action = "deploy" ]
 then
   env=$3
@@ -194,6 +196,7 @@ then
   setPerseusEnv $env
   updateImage $component 
   start  $component
+  echo "[$component] was successfully deployed."
 else
   setPerseusEnv prod
   dockerAction $wrImage
@@ -203,6 +206,7 @@ else
   dockerAction $builderImage
   dockerAction $dbImage
   dockerAction $backendImage
+  echo "Action [$action] was successfully done."
 fi
 
 bEnd=$(date +"%T")
