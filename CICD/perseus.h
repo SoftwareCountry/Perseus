@@ -121,6 +121,7 @@ setEnv () {
 
      frontendBranch=$stageBranch
      backendBranch=$stageBranch
+     cdmSouffleurEnv="staging"
 
    elif [ $env = "test" ]
    then
