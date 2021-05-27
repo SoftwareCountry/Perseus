@@ -1,16 +1,17 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { WhiteRabbitWebsocketService } from '../white-rabbit-websocket.service';
 import { FakeDataParams } from '../../../models/scan-data/fake-data-params';
 import { FakeDataService } from '../../../services/white-rabbit/fake-data.service';
 import { switchMap } from 'rxjs/operators';
+import { authInjector } from '../../../services/auth/auth-injector';
 
 @Injectable()
 export class FakeDataWebsocketService extends WhiteRabbitWebsocketService {
 
   endPoint = 'fake-data'
 
-  constructor(private fakeDataService: FakeDataService) {
-    super()
+  constructor(private fakeDataService: FakeDataService, @Inject(authInjector) authService) {
+    super(authService)
   }
 
   send(data: {params: FakeDataParams, report: File}): void {
@@ -23,7 +24,7 @@ export class FakeDataWebsocketService extends WhiteRabbitWebsocketService {
               ...params.dbSettings,
               schema
             }
-          }, this.userId, report)
+          }, this.sessionId, report)
         )
       )
       .subscribe(

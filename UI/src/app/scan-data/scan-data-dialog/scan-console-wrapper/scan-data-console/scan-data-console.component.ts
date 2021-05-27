@@ -26,8 +26,8 @@ export class ScanDataConsoleComponent extends ConsoleComponent {
   }
 
   abortAndCancel() {
-    if (this.scanDataWebsocketService.userId) {
-      this.whiteRabbitService.abort(this.scanDataWebsocketService.userId)
+    if (this.scanDataWebsocketService.sessionId) {
+      this.whiteRabbitService.abort(this.scanDataWebsocketService.sessionId)
         .pipe(finalize(() => this.websocketService.disconnect()))
         .subscribe()
     }
@@ -46,7 +46,7 @@ export class ScanDataConsoleComponent extends ConsoleComponent {
       case ProgressNotificationStatusCode.FINISHED: {
         this.progressValue = 100
         this.websocketService.disconnect()
-        this.whiteRabbitService.result(this.scanDataWebsocketService.userId)
+        this.whiteRabbitService.result(this.scanDataWebsocketService.sessionId)
           .subscribe(
             result => this.finish.emit(result),
             error => this.showNotificationMessage({

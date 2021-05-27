@@ -6,6 +6,7 @@ import * as SockJS from 'sockjs-client';
 import { isProd, whiteRabbitWsUrl } from '../../app.constants';
 import { Client } from '@stomp/stompjs/esm6/client';
 import { fromPromise } from 'rxjs/internal-compatibility';
+import { AuthService } from '../../services/auth/auth.service';
 
 export abstract class WhiteRabbitWebsocketService extends WebsocketService implements OnDestroy {
 
@@ -15,15 +16,15 @@ export abstract class WhiteRabbitWebsocketService extends WebsocketService imple
 
   private stompClient: Client;
 
-  private wsSessionId: string;
+  private customSessionId: string
 
-  protected constructor() {
+  protected constructor(private authService: AuthService) {
     super()
+    this.customSessionId = this.authService.user.token.substr(0, 10)
   }
 
-  /* Return WebSocket connection session id */
-  get userId() {
-    return this.wsSessionId;
+  get sessionId(): string {
+    return this.customSessionId
   }
 
   ngOnDestroy(): void {
@@ -37,7 +38,6 @@ export abstract class WhiteRabbitWebsocketService extends WebsocketService imple
     this.stompClient.activate();
 
     this.stompClient.onConnect = (frame: IFrame) => {
-      this.wsSessionId = this.sessionId()
       this.connection$.next(frame.command === 'CONNECTED');
     };
 
@@ -69,7 +69,9 @@ export abstract class WhiteRabbitWebsocketService extends WebsocketService imple
 
   private initStompClient(): void {
     this.stompClient = Stomp.over(() => {
-      this.socket = new SockJS(`${whiteRabbitWsUrl}/${this.endPoint}`);
+      this.socket = new SockJS(`${whiteRabbitWsUrl}/${this.endPoint}`, [], {
+        sessionId: () => this.sessionId
+      });
       return this.socket;
     });
 
@@ -79,14 +81,5 @@ export abstract class WhiteRabbitWebsocketService extends WebsocketService imple
     if (isProd) { // Disable logging
       this.stompClient.debug = msg => {};
     }
-  }
-
-  private sessionId(): string {
-    const sessionRegex = new RegExp(/(\w|\d)+\/websocket/)
-    const match = this.socket._transport.url.match(sessionRegex);
-    if (match?.length === 0) {
-      throw Error('Could not get WhiteRabbit session id')
-    }
-    return match[0].replace('/websocket', '')
   }
 }
