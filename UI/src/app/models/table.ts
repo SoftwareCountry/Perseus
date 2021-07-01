@@ -13,7 +13,6 @@ export interface ITable {
   cloneConnectedToSourceName: string;
 }
 
-
 export interface ITableOptions {
   id?: number;
   area?: Area;
@@ -26,7 +25,7 @@ export interface ITableOptions {
   cloneConnectedToSourceName?: string;
 }
 
-export class Table {
+export class Table implements ITable {
   id: number;
   area: Area;
   name: string;

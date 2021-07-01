@@ -1,32 +1,44 @@
 import { IRow } from 'src/app/models/row';
 import { getSVGPoint } from '@utils/draw-utilites';
 import { extractHtmlElement } from '@utils/html-utilities';
-import { ConnectorType, IConnector } from './connector.interface';
+import { ConnectorState, ConnectorType, IConnector } from './connector.interface';
 import { ElementRef, EventEmitter, Renderer2 } from '@angular/core';
+import { MappingVisitor } from '@models/mapping-infastructure/mapping-visitor';
+import { Exclude } from 'class-transformer';
 
 // TODO Hide properties with WeakMap
 
 const markerEndAttributeIndex = 9;
 
 export class Arrow implements IConnector {
+  @Exclude()
   clicked: EventEmitter<IConnector>;
 
   get svgPath(): SVGLineElement {
     return this.path;
   }
 
+  @Exclude()
   canvas: any;
+  @Exclude()
   button: Element;
-  selected = false;
 
+  @Exclude()
   sourceSVGPoint: any;
+  @Exclude()
   targetSVGPoint: any;
 
+  @Exclude()
   path: any;
+  @Exclude()
   title: any;
+  @Exclude()
   titleText: any;
-  type: ConnectorType;
 
+  type: ConnectorType;
+  selected = false;
+
+  @Exclude()
   private removeClickListener: any;
 
   constructor(
@@ -43,7 +55,6 @@ export class Arrow implements IConnector {
   }
 
   draw(): void {
-
     let source;
     let target;
 
@@ -205,6 +216,10 @@ export class Arrow implements IConnector {
     } else {
       this.select();
     }
+  }
+
+  toState(visitor: MappingVisitor): ConnectorState {
+    return visitor.connectorToState(this);
   }
 
   private generateSvgPath(pointStart: number[], pointEnd: number[]): string {

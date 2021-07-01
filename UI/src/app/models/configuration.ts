@@ -1,151 +1,116 @@
-import { ArrowCacheState } from './arrow-cache';
-import { IRow, Row } from './row';
-import { SqlFunction } from '@popups/rules-popup/transformation-input/model/sql-string-functions';
-import { parse, stringify } from 'flatted';
-import { Table } from './table';
-import { IConnection } from '@models/connector.interface';
+import { ArrowCache, ArrowCacheState, ConstantCache, ConstantCacheState } from './arrow-cache';
+import { IRow } from './row';
+import { ITable, Table } from './table';
+import { TargetConfig } from '@models/state';
+import { TableConcepts } from '@models/concept-transformation/concept';
+import { stateToArrowCache, stateToConstantCache } from '@utils/configuration';
 
+/**
+ * Flyweight mapping object for saving to a file
+ */
 export interface ConfigurationOptions {
   name?: string;
-  tablesConfiguration?: any;
+  tablesConfiguration?: TargetConfig;
   mappingsConfiguration?: ArrowCacheState;
   source?: Table[];
   target?: Table[];
-  report?: any;
-  version?: any;
-  filtered?: any;
-  constants?: any;
-  targetClones?: any;
+  report?: string;
+  version?: string;
+  filtered?: string;
+  constants?: ConstantCacheState;
+  targetClones?: { [key: string]: ITable[] };
   sourceSimilar?: IRow[];
   targetSimilar?: IRow[];
   recalculateSimilar?: boolean;
-  concepts?: any;
+  concepts?: { [key: string]: TableConcepts };
 }
 
+/**
+ * Mapping object read from json mapping file
+ */
 export class Configuration {
-  get arrows(): any {
-    const rows = parse(this.mappingsConfiguration);
-    Object.values(rows).forEach((row: IConnection) => {
-      const { source, target, transforms } = row;
-      row.source = Object.setPrototypeOf(source, Row.prototype);
-      row.target = Object.setPrototypeOf(target, Row.prototype);
-      row.transforms = transforms.map(t => new SqlFunction(t));
-    });
-    return rows;
+
+  get arrows(): ArrowCache {
+    return stateToArrowCache(this.mappingsConfiguration)
   }
 
-  get tables(): any {
-    return JSON.parse(this.tablesConfiguration);
+  get tables() {
+    return {...this.tablesConfiguration}
   }
 
-  get sourceTables(): Table[] {
-    const tables = [];
-    parse(this.source).map(item => tables.push(new Table(item)));
-    return tables;
+  get sourceTables() {
+    return [...this.source]
   }
 
-  get targetTables(): Table[] {
-    const tables = [];
-    parse(this.target).map(item => tables.push(new Table(item)));
-    return tables;
+  get targetTables() {
+    return [...this.target]
   }
 
-  get reportName(): any {
-    return JSON.parse(this.report);
+  get reportName() {
+    return this.report
   }
 
-  get cdmVersion(): any {
-    return JSON.parse(this.version);
+  get cdmVersion() {
+    return this.version
   }
 
-  get isFiltered(): any {
-    return JSON.parse(this.filtered);
+  get constantsCache(): ConstantCache {
+    return stateToConstantCache(this.constants)
   }
 
-  get constantsCache(): any {
-    if (this.constants) {
-      let constants;
-      try {
-        constants = parse(this.constants);
-      } catch {
-        constants = JSON.parse(this.constants)
-      }
-      return constants;
-    }
-    return {};
+  get targetClones() {
+    return {...this.targetTablesClones}
   }
 
-  get targetClones(): any {
-    const clonesResult = {};
-    const clones = parse(this.targetTablesClones);
-    Object.keys(clones).forEach(item => {
-      const cloneTables = [];
-      const cloneList = clones[item];
-      cloneList.forEach(it => cloneTables.push(new Table(it)));
-      clonesResult[item] = cloneTables;
-    });
-    return clonesResult;
+  get targetSimilarRows() {
+    return this.targetSimilar ? [...this.targetSimilar] : null
   }
 
-  get targetSimilarRows(): any {
-    if (parse(this.targetSimilar)) {
-      const rows = [];
-      parse(this.targetSimilar).map(item => rows.push(new Row(item)));
-      return rows;
-    }
+  get sourceSimilarRows() {
+    return this.sourceSimilar ? [...this.sourceSimilar] : null
   }
 
-  get sourceSimilarRows(): any {
-    if (parse(this.sourceSimilar)) {
-      const rows = [];
-      parse(this.sourceSimilar).map(item => rows.push(new Row(item)));
-      return rows;
-    }
+  get recalculateSimilarTables() {
+    return this.recalculateSimilar
   }
 
-  get recalculateSimilarTables(): any {
-    if (this.recalculateSimilar) {
-      return JSON.parse(this.recalculateSimilar)
-    }
-    return true;
+  get tableConcepts() {
+    return {...this.concepts}
   }
 
-  get tableConcepts(): any {
-    if (this.concepts) {
-      return JSON.parse(this.concepts);
-    }
-    return {};
+  get filteredString() {
+    return this.filtered
   }
 
-  name: string;
-  mappingsConfiguration: string;
-  tablesConfiguration: string;
-  source: string;
-  target: string;
-  report: string;
-  version: string;
-  filtered: string;
-  constants: string;
-  targetTablesClones: string;
-  sourceSimilar: string;
-  targetSimilar: string;
-  recalculateSimilar: string;
-  concepts: string;
+  private readonly name: string;
+  private readonly mappingsConfiguration: ArrowCacheState;
+  private readonly tablesConfiguration: TargetConfig;
+  private readonly source: Table[];
+  private readonly target: Table[];
+  private readonly report: string;
+  private readonly version: string;
+  private readonly filtered: string;
+  private readonly constants: ConstantCacheState;
+  private readonly targetTablesClones: { [key: string]: ITable[] };
+  private readonly sourceSimilar: IRow[];
+  private readonly targetSimilar: IRow[];
+  private readonly recalculateSimilar: boolean;
+  private readonly concepts: { [key: string]: TableConcepts };
 
   constructor(options: ConfigurationOptions = {}) {
     this.name = options.name;
-    this.mappingsConfiguration = stringify(options.mappingsConfiguration);
-    this.tablesConfiguration = JSON.stringify(options.tablesConfiguration);
-    this.source = stringify(options.source);
-    this.target = stringify(options.target);
-    this.report = JSON.stringify(options.report);
-    this.version = JSON.stringify(options.version);
-    this.filtered = JSON.stringify(options.filtered);
-    this.constants = stringify(options.constants);
-    this.targetTablesClones = stringify(options.targetClones);
-    this.sourceSimilar = stringify(options.sourceSimilar);
-    this.targetSimilar = stringify(options.targetSimilar);
-    this.recalculateSimilar = JSON.stringify(options.recalculateSimilar);
-    this.concepts = JSON.stringify(options.concepts);
+    this.mappingsConfiguration = options.mappingsConfiguration;
+    this.tablesConfiguration = options.tablesConfiguration;
+    this.source = options.source;
+    this.target = options.target;
+    this.report = options.report;
+    this.version = options.version;
+    this.filtered = options.filtered;
+    this.constants = options.constants;
+    this.targetTablesClones = options.targetClones;
+    this.sourceSimilar = options.sourceSimilar;
+    this.targetSimilar = options.targetSimilar;
+    this.recalculateSimilar = options.recalculateSimilar;
+    this.concepts = options.concepts;
   }
 }

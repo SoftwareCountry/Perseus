@@ -1,4 +1,4 @@
-import { IRow } from './row';
+import { IRow, RowState } from './row';
 import { IConnection, IConnectionState } from '@models/connector.interface';
 
 export interface Arrow {
@@ -25,4 +25,11 @@ export interface ArrowCacheState {
 **/
 export interface ConstantCache {
   [key: string]: IRow;
+}
+
+/*
+ * Flyweight copy of constant cache object
+**/
+export interface ConstantCacheState {
+  [key: string]: RowState;
 }

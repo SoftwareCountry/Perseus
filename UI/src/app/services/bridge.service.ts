@@ -317,7 +317,7 @@ export class BridgeService implements StateService {
 
     this.storeService.state = {
       ...this.storeService.state,
-      filtered: configuration.filtered,
+      filtered: configuration.filteredString,
       version: configuration.cdmVersion,
       target: configuration.targetTables,
       source: configuration.sourceTables,

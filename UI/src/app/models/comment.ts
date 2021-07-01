@@ -27,16 +27,7 @@ export class Comment {
     this.text = text;
   }
 
-  updateDate() {
-    this.date = new Date(Date.now());
-  }
-
-  setAsEdited() {
-    this.hasBeenEdited = true;
-  }
-
   newValue(value: string) {
     this.text = value;
   }
-
 }

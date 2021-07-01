@@ -2,6 +2,14 @@ import { ITable } from './table';
 import { IRow } from './row';
 import { TableConcepts } from '@models/concept-transformation/concept';
 
+export interface TargetConfig {
+  [key: string]: {
+    name: string, // Target table name
+    first: string,
+    data: string[] // Mapped source tables
+  }
+}
+
 export interface State {
   version?: string,
   filteredTables?: {
@@ -11,13 +19,7 @@ export interface State {
   },
   filteredFields?: any[],
   target: ITable[],
-  targetConfig: {
-    [key: string]: {
-      name: string, // Target table name
-      first: string,
-      data: string[] // Mapped source tables
-    }
-  },
+  targetConfig: TargetConfig
   source: ITable[],
   mappedSource?: ITable[],
   report?: string // Full report name with extension,
