@@ -1,6 +1,7 @@
 import { ITable } from './table';
 import { IRow } from './row';
-import { TableConcepts } from '@models/concept-transformation/concept';
+import { IConcepts } from '@models/concepts';
+import { IClones } from '@models/clones';
 
 export interface TargetConfig {
   [key: string]: {
@@ -32,17 +33,13 @@ export interface State {
     [key: string]: string
   },
   cdmVersions?: string[],
-  targetClones?: {
-    [key: string]: ITable[]
-  },
+  targetClones?: IClones,
   reportFile?: File,
   mappingEmpty?: boolean,
   sourceSimilar?: IRow[],
   targetSimilar?: IRow[],
   recalculateSimilar?: boolean,
-  concepts?: {
-    [key: string]: TableConcepts
-  },
+  concepts?: IConcepts,
   isMappingPage?: boolean,
   filtered?: string
   selectedSourceTableId?: number // Selected source table ID on mapping page

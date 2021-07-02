@@ -1,116 +1,145 @@
-import { ArrowCache, ArrowCacheState, ConstantCache, ConstantCacheState } from './arrow-cache';
-import { IRow } from './row';
+import { ArrowCache, ArrowCachePlain, IArrowCache } from './arrow-cache';
+import { IRow, Row } from './row';
 import { ITable, Table } from './table';
 import { TargetConfig } from '@models/state';
 import { TableConcepts } from '@models/concept-transformation/concept';
-import { stateToArrowCache, stateToConstantCache } from '@utils/configuration';
+import { ConstantCache, ConstantCachePlain, IConstantCache } from '@models/constant-cache';
+import { classToPlain, plainToClass } from 'class-transformer';
+import { ClassTransformOptions } from 'class-transformer/types/interfaces';
+import { Clones, IClones } from '@models/clones';
+import { Concepts, IConcepts } from '@models/concepts';
 
 /**
- * Flyweight mapping object for saving to a file
+ * Mapping object used for reading and writing to json file
  */
 export interface ConfigurationOptions {
   name?: string;
   tablesConfiguration?: TargetConfig;
-  mappingsConfiguration?: ArrowCacheState;
+  mappingsConfiguration?: IArrowCache;
   source?: Table[];
   target?: Table[];
   report?: string;
   version?: string;
   filtered?: string;
-  constants?: ConstantCacheState;
-  targetClones?: { [key: string]: ITable[] };
+  constants?: IConstantCache;
+  targetClones?: IClones;
   sourceSimilar?: IRow[];
   targetSimilar?: IRow[];
   recalculateSimilar?: boolean;
-  concepts?: { [key: string]: TableConcepts };
+  concepts?: IConcepts;
 }
 
 /**
- * Mapping object read from json mapping file
+ * Flyweight copy of ConfigurationOptions
  */
 export class Configuration {
 
   get arrows(): ArrowCache {
-    return stateToArrowCache(this.mappingsConfiguration)
+    return plainToClass(ArrowCache, this.mappingsConfiguration, transformOptions)
   }
 
-  get tables() {
-    return {...this.tablesConfiguration}
+  get tables(): TargetConfig {
+    return this.tablesConfiguration
   }
 
-  get sourceTables() {
-    return [...this.source]
+  get sourceTables(): Table[] {
+    return this.source?.map(plain => plainToClass(Table, plain, transformOptions))
   }
 
-  get targetTables() {
-    return [...this.target]
+  get targetTables(): Table[] {
+    return this.target?.map(plain => plainToClass(Table, plain, transformOptions))
   }
 
-  get reportName() {
+  get reportName(): string {
     return this.report
   }
 
-  get cdmVersion() {
+  get cdmVersion(): string {
     return this.version
   }
 
   get constantsCache(): ConstantCache {
-    return stateToConstantCache(this.constants)
+    return plainToClass(ConstantCache, this.constants, transformOptions)
   }
 
-  get targetClones() {
-    return {...this.targetTablesClones}
+  get targetClones(): Clones {
+    return plainToClass(Clones, this.targetTablesClones, transformOptions)
   }
 
-  get targetSimilarRows() {
-    return this.targetSimilar ? [...this.targetSimilar] : null
+
+  get targetSimilarRows(): Row[] {
+    return this.targetSimilar?.map(plain => plainToClass(Row, plain, transformOptions))
   }
 
-  get sourceSimilarRows() {
-    return this.sourceSimilar ? [...this.sourceSimilar] : null
+  get sourceSimilarRows(): Row[] {
+    return this.sourceSimilar?.map(plain => plainToClass(Row, plain, transformOptions))
   }
 
-  get recalculateSimilarTables() {
+  get recalculateSimilarTables(): boolean {
     return this.recalculateSimilar
   }
 
-  get tableConcepts() {
-    return {...this.concepts}
+  get tableConcepts(): Concepts {
+    return plainToClass(Concepts, this.concepts, transformOptions)
   }
 
-  get filteredString() {
+  get filteredString(): string {
     return this.filtered
   }
 
   private readonly name: string;
-  private readonly mappingsConfiguration: ArrowCacheState;
+  private readonly mappingsConfiguration: ArrowCachePlain;
   private readonly tablesConfiguration: TargetConfig;
-  private readonly source: Table[];
-  private readonly target: Table[];
+  private readonly source: Record<string, Table>[];
+  private readonly target: Record<string, Table>[];
   private readonly report: string;
   private readonly version: string;
   private readonly filtered: string;
-  private readonly constants: ConstantCacheState;
-  private readonly targetTablesClones: { [key: string]: ITable[] };
-  private readonly sourceSimilar: IRow[];
-  private readonly targetSimilar: IRow[];
+  private readonly constants: ConstantCachePlain;
+  private readonly targetTablesClones: TargetTablesClonesPlain;
+  private readonly sourceSimilar: Record<string, Row>[];
+  private readonly targetSimilar: Record<string, Row>[];
   private readonly recalculateSimilar: boolean;
-  private readonly concepts: { [key: string]: TableConcepts };
+  private readonly concepts: ConceptsPlain;
 
   constructor(options: ConfigurationOptions = {}) {
-    this.name = options.name;
-    this.mappingsConfiguration = options.mappingsConfiguration;
-    this.tablesConfiguration = options.tablesConfiguration;
-    this.source = options.source;
-    this.target = options.target;
-    this.report = options.report;
-    this.version = options.version;
-    this.filtered = options.filtered;
-    this.constants = options.constants;
-    this.targetTablesClones = options.targetClones;
-    this.sourceSimilar = options.sourceSimilar;
-    this.targetSimilar = options.targetSimilar;
-    this.recalculateSimilar = options.recalculateSimilar;
-    this.concepts = options.concepts;
+    this.name = options.name
+    this.mappingsConfiguration = new ArrowCachePlain(options.mappingsConfiguration)
+    this.tablesConfiguration = options.tablesConfiguration
+    this.source = options.source.map(table => classToPlain<Table>(table))
+    this.target = options.target.map(table => classToPlain<Table>(table))
+    this.report = options.report
+    this.version = options.version
+    this.filtered = options.filtered
+    this.constants = new ConstantCachePlain(options.constants)
+    this.targetTablesClones = new TargetTablesClonesPlain(options.targetClones)
+    this.sourceSimilar = options.sourceSimilar.map(row => classToPlain<Row>(row as Row))
+    this.targetSimilar = options.targetSimilar.map(row => classToPlain<Row>(row as Row))
+    this.recalculateSimilar = options.recalculateSimilar
+    this.concepts = new ConceptsPlain(options.concepts)
   }
 }
+
+class TargetTablesClonesPlain {
+  [key: string]: Record<string, Table>[]
+
+  constructor(targetTablesClones: { [key: string]: ITable[] }) {
+    Object.keys(targetTablesClones).forEach(key => {
+      const value = targetTablesClones[key]
+      this[key] = value.map(table => classToPlain<Table>(table))
+    });
+  }
+}
+
+class ConceptsPlain {
+  [key: string]: Record<string, TableConcepts>
+
+  constructor(concepts: { [key: string]: TableConcepts }) {
+    Object.keys(concepts).forEach(key => {
+      const value = concepts[key]
+      this[key] = classToPlain<TableConcepts>(value)
+    });
+  }
+}
+
+const transformOptions: ClassTransformOptions = { excludeExtraneousValues: true }

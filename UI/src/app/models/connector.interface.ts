@@ -1,13 +1,13 @@
-import { IRow, RowState } from './row';
+import { IRow, Row } from './row';
 import { EventEmitter } from '@angular/core';
 import { SqlFunction } from '@popups/rules-popup/transformation-input/model/sql-string-functions';
-import { MappingPart, MappingPartState } from '@models/mapping-infastructure/mapping-part';
-import { MappingStateVisitor } from '@models/mapping-infastructure/mapping-visitor';
+import { Arrow } from '@models/arrow';
+import { Type } from 'class-transformer';
 
-export interface IConnector extends MappingPart<ConnectorState> {
+export interface IConnector {
   id: string;
   canvas?: any;
-  svgPath?: Element;
+  path?: Element;
   source: IRow;
   target: IRow;
   selected: boolean;
@@ -24,21 +24,6 @@ export interface IConnector extends MappingPart<ConnectorState> {
   setEndMarkerType(type: string): void;
 }
 
-/*
- * Flyweight copy of IConnector
-**/
-export class ConnectorState implements MappingPartState<IConnector> {
-  readonly id: string;
-  readonly source: RowState;
-  readonly target: RowState;
-  readonly selected: boolean;
-  readonly type: ConnectorType;
-
-  toComponent(visitor: MappingStateVisitor): IConnector {
-    return visitor.connectorFromState(this)
-  }
-}
-
 export type ConnectorType = 'L' | 'T' | 'M' | '';
 
 export interface IConnection {
@@ -51,15 +36,19 @@ export interface IConnection {
   sql?: {};
 }
 
-/*
- * Flyweight copy of IConnection
-**/
-export interface IConnectionState {
-  readonly source: RowState;
-  readonly target: RowState;
-  readonly connector: ConnectorState,
-  readonly transforms?: SqlFunction[];
-  readonly lookup?: {};
-  readonly type?: string;
-  readonly sql?: {};
+export class Connection implements IConnection {
+
+  @Type(() => Row)
+  source: IRow;
+
+  @Type(() => Row)
+  target: IRow;
+
+  @Type(() => Arrow)
+  connector: IConnector;
+
+  transforms?: SqlFunction[];
+  lookup?: {};
+  type?: string;
+  sql?: {};
 }

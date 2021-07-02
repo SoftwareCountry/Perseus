@@ -1,35 +1,27 @@
-import { IRow, RowState } from './row';
-import { IConnection, IConnectionState } from '@models/connector.interface';
-
-export interface Arrow {
-  source: IRow;
-  target: IRow;
-}
+import { Connection, IConnection } from '@models/connector.interface';
+import { classToPlain } from 'class-transformer';
 
 /*
  * key - `${sourceTableId}-${sourceRowId}/${targetTableId}-${targetRowId}`
 **/
-export interface ArrowCache {
+export interface IArrowCache {
   [key: string]: IConnection;
 }
 
-/*
- * Flyweight copy of arrow cache object
-**/
-export interface ArrowCacheState {
-  [key: string]: IConnectionState;
+export class ArrowCache implements IArrowCache {
+  [key: string]: Connection;
 }
 
 /*
- * key - `${sourceTableId}/${targetTableId}-${targetRowId}`
+ * Flyweight copy of ArrowCache
 **/
-export interface ConstantCache {
-  [key: string]: IRow;
-}
+export class ArrowCachePlain {
+  [key: string]: Record<string, Connection>
 
-/*
- * Flyweight copy of constant cache object
-**/
-export interface ConstantCacheState {
-  [key: string]: RowState;
+  constructor(cache: IArrowCache) {
+    Object.keys(cache).forEach(key => {
+      const value = cache[key]
+      this[key] = classToPlain<Connection>(value)
+    })
+  }
 }

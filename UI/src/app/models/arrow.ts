@@ -1,57 +1,71 @@
-import { IRow } from 'src/app/models/row';
+import { IRow, Row } from 'src/app/models/row';
 import { getSVGPoint } from '@utils/draw-utilites';
 import { extractHtmlElement } from '@utils/html-utilities';
-import { ConnectorState, ConnectorType, IConnector } from './connector.interface';
+import { ConnectorType, IConnector } from './connector.interface';
 import { ElementRef, EventEmitter, Renderer2 } from '@angular/core';
-import { MappingVisitor } from '@models/mapping-infastructure/mapping-visitor';
-import { Exclude } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 
 // TODO Hide properties with WeakMap
 
 const markerEndAttributeIndex = 9;
 
 export class Arrow implements IConnector {
-  @Exclude()
-  clicked: EventEmitter<IConnector>;
-
-  get svgPath(): SVGLineElement {
-    return this.path;
-  }
 
   @Exclude()
   canvas: any;
+
+  @Exclude()
+  path: any;
+
+  @Type(() => Row)
+  source: IRow;
+
+  @Type(() => Row)
+  target: IRow;
+
+  selected = false;
+
   @Exclude()
   button: Element;
 
   @Exclude()
+  clicked: EventEmitter<IConnector>;
+
+  @Exclude()
   sourceSVGPoint: any;
+
   @Exclude()
   targetSVGPoint: any;
 
   @Exclude()
-  path: any;
-  @Exclude()
   title: any;
+
   @Exclude()
   titleText: any;
-
-  type: ConnectorType;
-  selected = false;
 
   @Exclude()
   private removeClickListener: any;
 
+  @Exclude()
+  private renderer: Renderer2
+
   constructor(
     canvasRef: ElementRef,
     public id: string,
-    public source: IRow,
-    public target: IRow,
-    type: ConnectorType,
-    private renderer: Renderer2
+    source: IRow,
+    target: IRow,
+    public type: ConnectorType,
+    renderer: Renderer2
   ) {
-    this.canvas = canvasRef ? canvasRef.nativeElement : null;
-    this.clicked = new EventEmitter<IConnector>();
-    this.type = type;
+    this.canvas = canvasRef ? canvasRef.nativeElement : null
+    this.source = source
+    this.target = target
+    this.clicked = new EventEmitter<IConnector>()
+    this.renderer = renderer
+  }
+
+  get svgPath(): SVGLineElement {
+    return this.path;
   }
 
   draw(): void {
@@ -216,10 +230,6 @@ export class Arrow implements IConnector {
     } else {
       this.select();
     }
-  }
-
-  toState(visitor: MappingVisitor): ConnectorState {
-    return visitor.connectorToState(this);
   }
 
   private generateSvgPath(pointStart: number[], pointEnd: number[]): string {

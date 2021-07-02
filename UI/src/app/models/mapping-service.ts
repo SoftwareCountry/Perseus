@@ -1,13 +1,14 @@
-import { ArrowCache, ConstantCache } from './arrow-cache';
+import { IArrowCache } from './arrow-cache';
 import { groupBy } from '../infrastructure/utility';
 import { Mapping, MappingNode, MappingPair } from './mapping';
 import { IRow } from './row';
 import { ITable } from './table';
 import { getLookupType } from '@utils/lookup-util';
-import * as conceptMap from '../cdm/mapping/concept-fileds-list.json'
+import * as conceptMap from '../cdm/mapping/concept-fileds-list.json';
 import { IConcept, ITableConcepts } from '@models/concept-transformation/concept';
 import { conceptFieldsTypes } from '../app.constants';
 import { IConnection } from '@models/connector.interface';
+import { IConstantCache } from '@models/constant-cache';
 
 export class MappingService {
   connections: Array<IConnection>;
@@ -20,7 +21,7 @@ export class MappingService {
   };
   clones: any;
 
-  constructor(arrowCache: ArrowCache, constants: ConstantCache, sourceTableName: string, targetTableName: string, concepts: { [key: string]: ITableConcepts }, clones: any) {
+  constructor(arrowCache: IArrowCache, constants: IConstantCache, sourceTableName: string, targetTableName: string, concepts: { [key: string]: ITableConcepts }, clones: any) {
     if (!arrowCache) {
       throw new Error('data should be not empty');
     }

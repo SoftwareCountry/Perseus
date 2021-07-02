@@ -1,8 +1,7 @@
-import { IComment } from 'src/app/models/comment';
+import { Comment, IComment } from 'src/app/models/comment';
 import { Area } from './area';
 import { ConnectorType } from './connector.interface';
-import { MappingPart, MappingPartState } from '@models/mapping-infastructure/mapping-part';
-import { MappingStateVisitor, MappingVisitor } from '@models/mapping-infastructure/mapping-visitor';
+import { Exclude, Type } from 'class-transformer';
 
 export interface RowOptions {
   id?: number;
@@ -28,7 +27,7 @@ export interface RowOptions {
   condition?: string;
 }
 
-export interface IRow extends MappingPart<RowState>{
+export interface IRow {
   readonly key: string;
   readonly hasConstant: boolean;
   readonly hasIncrement: boolean;
@@ -68,20 +67,29 @@ export class Row implements IRow {
   name: string;
   type: string;
   area: string;
+
+  @Type(() => Comment)
   comments: IComment[];
+
   constant: string;
   increment: boolean;
   values: any[];
   visible = true;
   connections = [];
+
+  @Exclude()
   htmlElement: any = null;
+
   selected: boolean;
   connectorTypes: ConnectorType[];
   uniqueIdentifier: boolean;
   sqlTransformation: string;
   sqlTransformationActive: boolean;
   isNullable: boolean;
+
+  @Type(() => Row)
   grouppedFields: IRow[];
+
   cloneTableName: string;
   cloneConnectedToSourceName: string;
   condition: string;
@@ -140,40 +148,5 @@ export class Row implements IRow {
   toString(): string {
     return `id:${this.id} table:${this.tableId} tablename:${this.tableName}
        name:${this.name} type:${this.type} area:${this.area} comments:${this.comments} visible:${this.visible}`;
-  }
-
-  toState(visitor: MappingVisitor): RowState {
-    return visitor.rowToState(this);
-  }
-}
-
-/*
- * Flyweight copy of IRow
-**/
-export class RowState implements MappingPartState<IRow> {
-  id: number;
-  tableId: number;
-  tableName: string;
-  name: string;
-  type: string;
-  area: string;
-  values: any[];
-  comments: IComment[];
-  visible?: boolean;
-  constant: string;
-  increment: boolean;
-  selected: boolean;
-  connectorTypes: ConnectorType[];
-  uniqueIdentifier: boolean;
-  sqlTransformation: string;
-  sqlTransformationActive: boolean;
-  isNullable: boolean;
-  grouppedFields: RowState[];
-  cloneTableName: string;
-  cloneConnectedToSourceName: string;
-  condition: string
-
-  toComponent(visitor: MappingStateVisitor): IRow {
-    return visitor.rowFromState(this);
   }
 }

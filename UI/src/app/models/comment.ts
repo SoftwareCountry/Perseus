@@ -10,7 +10,7 @@ export interface IComment {
   newValue(value: string): void;
 }
 
-export class Comment {
+export class Comment implements IComment {
   id: number;
   date: Date;
   hasBeenEdited: boolean;
@@ -25,6 +25,14 @@ export class Comment {
     this.hasBeenEdited = false;
     this.active = false;
     this.text = text;
+  }
+
+  updateDate() {
+    this.date = new Date(Date.now());
+  }
+
+  setAsEdited() {
+    this.hasBeenEdited = true;
   }
 
   newValue(value: string) {
