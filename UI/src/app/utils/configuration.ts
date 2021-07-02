@@ -1,7 +1,8 @@
 import { IArrowCache } from '@models/arrow-cache';
 import { State } from '@models/state';
-import { ConfigurationOptions } from '@models/configuration';
+import { Configuration, ConfigurationOptions } from '@models/configuration';
 import { IConstantCache } from '@models/constant-cache';
+import { classToPlain, plainToClass } from 'class-transformer';
 
 export function mappingStateToJsonConfiguration(configurationName: string,
                                                 state: State,
@@ -23,6 +24,12 @@ export function mappingStateToJsonConfiguration(configurationName: string,
     recalculateSimilar: state.recalculateSimilar,
     concepts: state.concepts
   }
+  const configuration = new Configuration(options)
+  const plain = classToPlain(configuration)
+  return JSON.stringify(plain)
+}
 
-  return JSON.stringify(options)
+export function jsonToConfiguration(json: {}): Configuration {
+  const result = plainToClass(Configuration, json, {excludeExtraneousValues: true})
+  return result
 }

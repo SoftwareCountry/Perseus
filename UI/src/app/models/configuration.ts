@@ -66,7 +66,6 @@ export class Configuration {
     return plainToClass(Clones, this.targetTablesClones, transformOptions)
   }
 
-
   get targetSimilarRows(): Row[] {
     return this.targetSimilar?.map(plain => plainToClass(Row, plain, transformOptions))
   }
@@ -106,15 +105,15 @@ export class Configuration {
     this.name = options.name
     this.mappingsConfiguration = new ArrowCachePlain(options.mappingsConfiguration)
     this.tablesConfiguration = options.tablesConfiguration
-    this.source = options.source.map(table => classToPlain<Table>(table))
-    this.target = options.target.map(table => classToPlain<Table>(table))
+    this.source = options.source?.map(table => classToPlain<Table>(table))
+    this.target = options.target?.map(table => classToPlain<Table>(table))
     this.report = options.report
     this.version = options.version
     this.filtered = options.filtered
     this.constants = new ConstantCachePlain(options.constants)
     this.targetTablesClones = new TargetTablesClonesPlain(options.targetClones)
-    this.sourceSimilar = options.sourceSimilar.map(row => classToPlain<Row>(row as Row))
-    this.targetSimilar = options.targetSimilar.map(row => classToPlain<Row>(row as Row))
+    this.sourceSimilar = options.sourceSimilar?.map(row => classToPlain<Row>(row as Row))
+    this.targetSimilar = options.targetSimilar?.map(row => classToPlain<Row>(row as Row))
     this.recalculateSimilar = options.recalculateSimilar
     this.concepts = new ConceptsPlain(options.concepts)
   }
@@ -124,10 +123,12 @@ class TargetTablesClonesPlain {
   [key: string]: Record<string, Table>[]
 
   constructor(targetTablesClones: { [key: string]: ITable[] }) {
-    Object.keys(targetTablesClones).forEach(key => {
-      const value = targetTablesClones[key]
-      this[key] = value.map(table => classToPlain<Table>(table))
-    });
+    if (targetTablesClones) {
+      Object.keys(targetTablesClones).forEach(key => {
+        const value = targetTablesClones[key]
+        this[key] = value.map(table => classToPlain<Table>(table))
+      });
+    }
   }
 }
 
@@ -135,11 +136,30 @@ class ConceptsPlain {
   [key: string]: Record<string, TableConcepts>
 
   constructor(concepts: { [key: string]: TableConcepts }) {
-    Object.keys(concepts).forEach(key => {
-      const value = concepts[key]
-      this[key] = classToPlain<TableConcepts>(value)
-    });
+    if (concepts) {
+      Object.keys(concepts).forEach(key => {
+        const value = concepts[key]
+        this[key] = classToPlain<TableConcepts>(value)
+      });
+    }
   }
 }
 
 const transformOptions: ClassTransformOptions = { excludeExtraneousValues: true }
+
+export class ConfigurationPlain {
+  name: string;
+  mappingsConfiguration: ArrowCachePlain;
+  tablesConfiguration: TargetConfig;
+  source: Record<string, Table>[];
+  target: Record<string, Table>[];
+  report: string;
+  version: string;
+  filtered: string;
+  constants: ConstantCachePlain;
+  targetTablesClones: TargetTablesClonesPlain;
+  sourceSimilar: Record<string, Row>[];
+  targetSimilar: Record<string, Row>[];
+  recalculateSimilar: boolean;
+  concepts: ConceptsPlain;
+}
