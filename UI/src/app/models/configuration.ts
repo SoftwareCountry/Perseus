@@ -4,7 +4,7 @@ import { ITable, Table } from './table';
 import { TargetConfig } from '@models/state';
 import { TableConcepts } from '@models/concept-transformation/concept';
 import { ConstantCache, ConstantCachePlain, IConstantCache } from '@models/constant-cache';
-import { classToPlain, plainToClass } from 'class-transformer';
+import { classToPlain, plainToClass, Type } from 'class-transformer';
 import { ClassTransformOptions } from 'class-transformer/types/interfaces';
 import { Clones, IClones } from '@models/clones';
 import { Concepts, IConcepts } from '@models/concepts';
@@ -12,7 +12,7 @@ import { Concepts, IConcepts } from '@models/concepts';
 /**
  * Mapping object used for reading and writing to json file
  */
-export interface ConfigurationOptions {
+export interface IConfiguration {
   name?: string;
   tablesConfiguration?: TargetConfig;
   mappingsConfiguration?: IArrowCache;
@@ -29,10 +29,35 @@ export interface ConfigurationOptions {
   concepts?: IConcepts;
 }
 
+export class Configuration implements IConfiguration {
+  name?: string;
+  tablesConfiguration?: TargetConfig;
+
+  @Type(() => ArrowCache)
+  mappingsConfiguration?: ArrowCache;
+
+  @Type(() => Table)
+  source?: Table[];
+
+  @Type(() => Table)
+  target?: Table[];
+
+  report?: string;
+  version?: string;
+  filtered?: string;
+
+  constants?: ConstantCache;
+  targetClones?: Clones;
+  sourceSimilar?: Row[];
+  targetSimilar?: Row[];
+  recalculateSimilar?: boolean;
+  concepts?: Concepts;
+}
+
 /**
- * Flyweight copy of ConfigurationOptions
+ * Flyweight copy of IConfiguration
  */
-export class Configuration {
+export class ConfigurationWrapper {
 
   get arrows(): ArrowCache {
     return plainToClass(ArrowCache, this.mappingsConfiguration, transformOptions)
@@ -101,7 +126,7 @@ export class Configuration {
   private readonly recalculateSimilar: boolean;
   private readonly concepts: ConceptsPlain;
 
-  constructor(options: ConfigurationOptions = {}) {
+  constructor(options: IConfiguration = {}) {
     this.name = options.name
     this.mappingsConfiguration = new ArrowCachePlain(options.mappingsConfiguration)
     this.tablesConfiguration = options.tablesConfiguration

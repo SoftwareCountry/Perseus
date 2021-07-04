@@ -1,5 +1,5 @@
 import { Connection, IConnection } from '@models/connector.interface';
-import { classToPlain } from 'class-transformer';
+import { classToPlain, Type } from 'class-transformer';
 
 /*
  * key - `${sourceTableId}-${sourceRowId}/${targetTableId}-${targetRowId}`
@@ -9,6 +9,9 @@ export interface IArrowCache {
 }
 
 export class ArrowCache implements IArrowCache {
+
+  // @ts-ignore
+  @Type(() => Connection)
   [key: string]: Connection;
 }
 

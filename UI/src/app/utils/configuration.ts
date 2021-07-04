@@ -1,14 +1,14 @@
 import { IArrowCache } from '@models/arrow-cache';
 import { State } from '@models/state';
-import { Configuration, ConfigurationOptions } from '@models/configuration';
+import { Configuration, ConfigurationWrapper, IConfiguration } from '@models/configuration';
 import { IConstantCache } from '@models/constant-cache';
-import { classToPlain, plainToClass } from 'class-transformer';
+import { plainToClass } from 'class-transformer';
 
 export function mappingStateToJsonConfiguration(configurationName: string,
                                                 state: State,
                                                 arrowCache: IArrowCache,
                                                 constantsCache: IConstantCache): string {
-  const options: ConfigurationOptions = {
+  const options: IConfiguration = {
     name: configurationName,
     mappingsConfiguration: arrowCache,
     tablesConfiguration: state.targetConfig,
@@ -24,8 +24,7 @@ export function mappingStateToJsonConfiguration(configurationName: string,
     recalculateSimilar: state.recalculateSimilar,
     concepts: state.concepts
   }
-  const configuration = new Configuration(options)
-  const plain = classToPlain(configuration)
+  const plain = new ConfigurationWrapper(options)
   return JSON.stringify(plain)
 }
 

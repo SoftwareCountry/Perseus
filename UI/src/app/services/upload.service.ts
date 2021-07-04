@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { BridgeService } from './bridge.service';
 import { DataService } from './data.service';
 import { HttpService } from './http.service';
-import { Configuration, ConfigurationOptions } from '@models/configuration';
+import { ConfigurationWrapper, IConfiguration } from '@models/configuration';
 import { StoreService } from './store.service';
 import { BehaviorSubject, forkJoin, Observable } from 'rxjs';
 import * as jsZip from 'jszip';
@@ -105,7 +105,7 @@ export class UploadService {
       return readJsZipFile(zipObject, 'string')
         .pipe(
           tap(content => {
-            const loadedConfig: ConfigurationOptions = JSON.parse(content);
+            const loadedConfig: IConfiguration = JSON.parse(content);
             const resultConfig = new Configuration(loadedConfig);
             this.loadMapping(resultConfig)
           })
@@ -118,7 +118,7 @@ export class UploadService {
     }
   }
 
-  loadMapping(configuration: Configuration) {
+  loadMapping(configuration: ConfigurationWrapper) {
     this.bridgeService.applyConfiguration(configuration);
   }
 
