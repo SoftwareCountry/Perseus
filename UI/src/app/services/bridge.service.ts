@@ -463,9 +463,11 @@ export class BridgeService implements StateService {
     const deleteCondition = tableCloneName ?
       (targetName: any, sourceName: any, cloneName: any) => targetName.toUpperCase() === targetTableName.toUpperCase() &&
         sourceName.toUpperCase() === sourceTableName.toUpperCase() &&
-        tableCloneName.toUpperCase() === cloneName.toUpperCase() :
+        tableCloneName.toUpperCase() === cloneName.toUpperCase()
+      :
       (targetName: any, sourceName: any, cloneName: any) => targetName.toUpperCase() === targetTableName.toUpperCase() &&
         sourceName.toUpperCase() === sourceTableName.toUpperCase();
+
     Object.keys(this.arrowsCache).forEach(key => {
       const cache = this.arrowsCache[ key ];
       const { target: { tableName: cachedTargetTableName, cloneTableName: clone }, source: { tableName: cachedSourceTableName } } = cache;
@@ -741,7 +743,7 @@ export class BridgeService implements StateService {
     this.tables = {}
   }
 
-  private collectSimilarRows(rows, area, areaRows, similarRows): void {
+  collectSimilarRows(rows, area, areaRows, similarRows): void {
     rows.forEach(row => {
       if (!row.grouppedFields || !row.grouppedFields.length) {
 

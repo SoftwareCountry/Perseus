@@ -22,7 +22,7 @@ import { uniq, uniqBy } from 'src/app/infrastructure/utility';
 import { IRow } from 'src/app/models/row';
 import { BridgeService } from 'src/app/services/bridge.service';
 import { IVocabulary, VocabulariesService } from 'src/app/services/vocabularies.service';
-import { Area } from '@models/area';
+import { Area, AreaType } from '@models/area';
 import { CommonUtilsService } from '@services/common-utils.service';
 import { CommonService } from '@services/common.service';
 import { OverlayConfigOptions } from '@services/overlay/overlay-config-options.interface';
@@ -43,6 +43,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop/drag-events';
 import { State } from '@models/state';
 import { asc } from '@utils/sort';
 import { canOpenMappingPage } from '@utils/mapping-util';
+import { deleteArrowForSimilar, hasSourceAndTargetSimilar } from '@utils/similar-util';
 
 @Component({
   selector: 'app-comfy',
@@ -124,6 +125,9 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
   @ViewChildren(CdkDrag) dragEls: QueryList<CdkDrag>;
   @ViewChild('mappingUpload', {static: false}) mappingInput: ElementRef;
 
+  /**
+   * Call when emit drag end event
+   */
   drop = new Command({
     execute: (event: CdkDragDrop<string[], string[]>) => {
       const {container, previousContainer, previousIndex, currentIndex} = event;
@@ -424,6 +428,12 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
       targetTableName,
       sourceTableName
     );
+
+    const sourceAndTargetSimilar = hasSourceAndTargetSimilar(this.bridgeService, this.storeService)
+    Object.keys(sourceAndTargetSimilar)
+      .filter(key => sourceAndTargetSimilar[key])
+      .map(key => key as AreaType)
+      .forEach(key => deleteArrowForSimilar(key, this.bridgeService))
   }
 
   filterByName(area: string, byName: Criteria): void {

@@ -30,7 +30,7 @@ export interface State {
   mappingEmpty?: boolean,
   sourceSimilar?: IRow[],
   targetSimilar?: IRow[],
-  recalculateSimilar?: boolean,
+  recalculateSimilar?: boolean, // This flag used in mapping.component
   concepts?: IConcepts,
   isMappingPage?: boolean,
   filtered?: string
