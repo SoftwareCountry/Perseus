@@ -44,6 +44,6 @@ export interface TargetConfig {
   [key: string]: {
     name: string, // Target table name
     first: string,
-    data: string[] // Mapped source tables
+    data: string[] // Current target table +  Mapped source tables
   }
 }

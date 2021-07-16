@@ -3,5 +3,3 @@ export enum Area {
   Target = 'target',
   SourceColumn = 'source-column'
 }
-
-export type AreaType = 'source' | 'target'

@@ -22,7 +22,7 @@ import { uniq, uniqBy } from 'src/app/infrastructure/utility';
 import { IRow } from 'src/app/models/row';
 import { BridgeService } from 'src/app/services/bridge.service';
 import { IVocabulary, VocabulariesService } from 'src/app/services/vocabularies.service';
-import { Area, AreaType } from '@models/area';
+import { Area } from '@models/area';
 import { CommonUtilsService } from '@services/common-utils.service';
 import { CommonService } from '@services/common.service';
 import { OverlayConfigOptions } from '@services/overlay/overlay-config-options.interface';
@@ -44,6 +44,7 @@ import { State } from '@models/state';
 import { asc } from '@utils/sort';
 import { canOpenMappingPage } from '@utils/mapping-util';
 import { deleteArrowForSimilar, hasSourceAndTargetSimilar } from '@utils/similar-util';
+import { isDeletedLastTablesLink } from '@utils/bridge-util';
 
 @Component({
   selector: 'app-comfy',
@@ -424,16 +425,24 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
       delete this.storeService.state.concepts[`${targetTableName}|${sourceTableName}`];
     }
 
+    // Delete all arrow for removed table
     this.bridgeService.deleteArrowsForMapping(
       targetTableName,
       sourceTableName
     );
 
+    // If similar table no longer needed than remove similar arrows
     const sourceAndTargetSimilar = hasSourceAndTargetSimilar(this.bridgeService, this.storeService)
     Object.keys(sourceAndTargetSimilar)
       .filter(key => sourceAndTargetSimilar[key])
-      .map(key => key as AreaType)
+      .map(key => key as Area)
       .forEach(key => deleteArrowForSimilar(key, this.bridgeService))
+
+    // Delete constants if target table no longer connected
+    if (isDeletedLastTablesLink(targetTableName, this.targetConfig)) {
+      this.bridgeService.deleteConstantForMapping(targetTableName)
+      // Todo delete constants for similar table
+    }
   }
 
   filterByName(area: string, byName: Criteria): void {

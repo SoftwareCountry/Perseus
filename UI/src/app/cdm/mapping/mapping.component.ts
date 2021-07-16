@@ -745,8 +745,10 @@ export class MappingComponent extends BaseComponent implements OnInit, OnDestroy
   private loadMapping() {
     const {source, target} = this.storeService.getMappedTables();
 
+    // Init source and target tables and add similar tables if they are needed
     this.prepareTables(source, Area.Source);
     this.prepareTables(target, Area.Target);
+
     this.prepareMappedTables(this.getMappingConfig());
     this.moveSimilarTables();
     if (!this.storeService.state.recalculateSimilar) {

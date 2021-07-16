@@ -1,6 +1,6 @@
 import { BridgeService } from '@services/bridge.service';
 import { ITable } from '@models/table';
-import { AreaType } from '@models/area';
+import { Area } from '@models/area';
 import { similarTableName } from '@app/app.constants';
 import { StoreService } from '@services/store.service';
 
@@ -8,8 +8,8 @@ export function hasSourceAndTargetSimilar(bridgeService: BridgeService,
                                           storeService: StoreService): {source: boolean, target: boolean} {
   const mappedTables = storeService.getMappedTables()
 
-  const source = hasSimilar(mappedTables['source'], 'source', bridgeService)
-  const target = hasSimilar(mappedTables['target'], 'target', bridgeService)
+  const source = hasSimilar(mappedTables['source'], Area.Source, bridgeService)
+  const target = hasSimilar(mappedTables['target'], Area.Target, bridgeService)
 
   return {
     source,
@@ -18,7 +18,7 @@ export function hasSourceAndTargetSimilar(bridgeService: BridgeService,
 }
 
 export function hasSimilar(mappedTables: ITable[],
-                           area: AreaType,
+                           area: Area,
                            bridgeService: BridgeService): boolean {
   const similarRows = []
   const rows = []
@@ -33,7 +33,7 @@ export function hasSimilar(mappedTables: ITable[],
   return false
 }
 
-export function deleteArrowForSimilar(area: AreaType, bridgeService: BridgeService) {
+export function deleteArrowForSimilar(area: Area, bridgeService: BridgeService) {
   Object.keys(bridgeService.arrowsCache).forEach(key => {
     const arrowFromCache = bridgeService.arrowsCache[key]
     if (arrowFromCache[area].tableName === similarTableName) {
