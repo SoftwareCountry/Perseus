@@ -30,7 +30,7 @@ export interface State {
   mappingEmpty?: boolean,
   sourceSimilar?: IRow[],
   targetSimilar?: IRow[],
-  recalculateSimilar?: boolean,
+  recalculateSimilar?: boolean, // This flag used in mapping.component
   concepts?: IConcepts,
   isMappingPage?: boolean,
   filtered?: string
@@ -44,6 +44,6 @@ export interface TargetConfig {
   [key: string]: {
     name: string, // Target table name
     first: string,
-    data: string[] // Mapped source tables
+    data: string[] // Current target table +  Mapped source tables
   }
 }

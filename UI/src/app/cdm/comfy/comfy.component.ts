@@ -43,6 +43,8 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop/drag-events';
 import { State } from '@models/state';
 import { asc } from '@utils/sort';
 import { canOpenMappingPage } from '@utils/mapping-util';
+import { deleteArrowForSimilar, hasSourceAndTargetSimilar } from '@utils/similar-util';
+import { isDeletedLastTablesLink } from '@utils/bridge-util';
 
 @Component({
   selector: 'app-comfy',
@@ -124,6 +126,9 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
   @ViewChildren(CdkDrag) dragEls: QueryList<CdkDrag>;
   @ViewChild('mappingUpload', {static: false}) mappingInput: ElementRef;
 
+  /**
+   * Call when emit drag end event
+   */
   drop = new Command({
     execute: (event: CdkDragDrop<string[], string[]>) => {
       const {container, previousContainer, previousIndex, currentIndex} = event;
@@ -420,10 +425,24 @@ export class ComfyComponent extends BaseComponent implements OnInit, AfterViewIn
       delete this.storeService.state.concepts[`${targetTableName}|${sourceTableName}`];
     }
 
+    // Delete all arrow for removed table
     this.bridgeService.deleteArrowsForMapping(
       targetTableName,
       sourceTableName
     );
+
+    // If similar table no longer needed than remove similar arrows
+    const sourceAndTargetSimilar = hasSourceAndTargetSimilar(this.bridgeService, this.storeService)
+    Object.keys(sourceAndTargetSimilar)
+      .filter(key => sourceAndTargetSimilar[key])
+      .map(key => key as Area)
+      .forEach(key => deleteArrowForSimilar(key, this.bridgeService))
+
+    // Delete constants if target table no longer connected
+    if (isDeletedLastTablesLink(targetTableName, this.targetConfig)) {
+      this.bridgeService.deleteConstantForMapping(targetTableName)
+      // Todo delete constants for similar table
+    }
   }
 
   filterByName(area: string, byName: Criteria): void {

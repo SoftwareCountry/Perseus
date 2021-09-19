@@ -17,7 +17,7 @@ import * as conceptFieldsFromJson from '../cdm/mapping/concept-fileds-list.json'
 import { ConceptTransformationService } from './concept-transformation.sevice';
 import { getConceptFieldsDictionary } from 'src/app/utils/concept-util';
 import { Mapping } from '@models/mapping';
-import { canLink, removeDeletedLinksFromFields } from '@utils/bridge';
+import { canLink, deleteConditionFuncForArrow, deleteConditionFuncForConst, removeDeletedLinksFromFields } from '@utils/bridge-util';
 import { getConstantId } from '@utils/constant';
 import { getConnectorId } from '@utils/connector';
 import { StateService } from '@services/state/state.service';
@@ -405,6 +405,8 @@ export class BridgeService implements StateService {
       if (savedConnection.source.tableName === 'similar' || savedConnection.target.tableName === 'similar') {
         this.deleteSimilar(savedConnection);
       }
+
+      // Todo delete constant
     }
   }
 
@@ -460,12 +462,8 @@ export class BridgeService implements StateService {
   }
 
   deleteArrowsForMapping(targetTableName: string, sourceTableName: string, tableCloneName?: string) {
-    const deleteCondition = tableCloneName ?
-      (targetName: any, sourceName: any, cloneName: any) => targetName.toUpperCase() === targetTableName.toUpperCase() &&
-        sourceName.toUpperCase() === sourceTableName.toUpperCase() &&
-        tableCloneName.toUpperCase() === cloneName.toUpperCase() :
-      (targetName: any, sourceName: any, cloneName: any) => targetName.toUpperCase() === targetTableName.toUpperCase() &&
-        sourceName.toUpperCase() === sourceTableName.toUpperCase();
+    const deleteCondition = deleteConditionFuncForArrow(targetTableName, sourceTableName, tableCloneName)
+
     Object.keys(this.arrowsCache).forEach(key => {
       const cache = this.arrowsCache[ key ];
       const { target: { tableName: cachedTargetTableName, cloneTableName: clone }, source: { tableName: cachedSourceTableName } } = cache;
@@ -480,6 +478,18 @@ export class BridgeService implements StateService {
         delete this.arrowsCache[ key ];
       }
     });
+  }
+
+  deleteConstantForMapping(targetTableName: string, tableCloneName?: string) {
+    const deleteCondition = deleteConditionFuncForConst(targetTableName, tableCloneName)
+
+    Object.keys(this.constantsCache).forEach(key => {
+      const constFromCache = this.constantsCache[key]
+      const {tableName, cloneTableName} = constFromCache
+      if (deleteCondition(tableName, cloneTableName)) {
+        delete this.constantsCache[key]
+      }
+    })
   }
 
   drawArrow(sourceRow, targetRow, type = '', cloneTable?) {
@@ -714,7 +724,10 @@ export class BridgeService implements StateService {
     return addClonesToMapping(mappingJSON);
   }
 
-  prepareTables(data, area, areaRows) {
+  /**
+   * return source or target table with similar table if similar is needed
+   */
+  prepareTables(data: ITable[], area: Area, areaRows: IRow[]) {
     const similarRows = [];
 
     const tables = data.map(table => {
@@ -741,7 +754,10 @@ export class BridgeService implements StateService {
     this.tables = {}
   }
 
-  private collectSimilarRows(rows, area, areaRows, similarRows): void {
+  /**
+   * Find similar rows and add they to similarRows variable
+   */
+  collectSimilarRows(rows: IRow[], area: Area, areaRows: IRow[], similarRows: IRow[]): void {
     rows.forEach(row => {
       if (!row.grouppedFields || !row.grouppedFields.length) {
 
@@ -761,7 +777,6 @@ export class BridgeService implements StateService {
           };
           similarRows.push(rowForSimilar);
         }
-
       }
     });
   }

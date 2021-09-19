@@ -4,11 +4,13 @@ import { Mapping, MappingNode, MappingPair } from '@models/mapping';
 import { IRow } from '@models/row';
 import { ITable } from '@models/table';
 import { getLookupType } from '@utils/lookup-util';
-import * as conceptMap from '@mapping/concept-fileds-list.json'
-import { IConcept, ITableConcepts } from '@models/concept-transformation/concept';
+import * as conceptMap from '@mapping/concept-fileds-list.json';
+import { IConcept } from '@models/concept-transformation/concept';
 import { conceptFieldsTypes } from '../app.constants';
 import { IConnection } from '@models/connection';
 import { IConstantCache } from '@models/constant-cache';
+import { IConcepts } from '@models/concepts';
+import { IClones } from '@models/clones';
 
 export class MappingService {
   connections: Array<IConnection>;
@@ -16,12 +18,15 @@ export class MappingService {
   sourceTableName: string;
   targetTableName: string;
   conceptFieldsMap = (conceptMap as any).default;
-  concepts: {
-    [key: string]: ITableConcepts
-  };
-  clones: any;
+  concepts: IConcepts;
+  clones: IClones;
 
-  constructor(arrowCache: IArrowCache, constants: IConstantCache, sourceTableName: string, targetTableName: string, concepts: { [key: string]: ITableConcepts }, clones: any) {
+  constructor(arrowCache: IArrowCache,
+              constants: IConstantCache,
+              sourceTableName: string,
+              targetTableName: string,
+              concepts: IConcepts,
+              clones: IClones) {
     if (!arrowCache) {
       throw new Error('data should be not empty');
     }
@@ -122,7 +127,6 @@ export class MappingService {
 
     return mapping;
   }
-
 
   addConceptFields(mapping: Mapping) {
     Object.keys(this.concepts).forEach(key => {
