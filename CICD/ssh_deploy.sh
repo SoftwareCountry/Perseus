@@ -6,7 +6,7 @@ set -x
 component=$1
 env=$2
 sshUser=arcuser
-host=jnjcicdu1
+host=10.110.1.7
 
 if [ $env = "prod" ] 
 then
