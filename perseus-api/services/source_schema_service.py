@@ -45,7 +45,8 @@ def _create_source_schema_by_scan_report(current_user, source_schema_path):
 
     schema = []
     global opened_reports
-    opened_reports = {}
+    if current_user in opened_reports and opened_reports[current_user]['path'] == filepath:
+        opened_reports[current_user]['path'] = ''
     try:
         book = _open_book(current_user, filepath)
     except Exception as e:
