@@ -2,7 +2,7 @@ FROM postgres
 
 ARG BASE64_PAT
 RUN apt-get update \
-    && apt-get install -yqq --no-install-recommends git \
+    && apt-get install -yqq --no-install-recommends ca-certificates git \
     && apt-get autoclean \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
