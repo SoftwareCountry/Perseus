@@ -34,10 +34,8 @@ def after_request(response):
 
 
 def import_data():
-    app.logger.info("Import data job started")
     try:
         create_index_if_not_exist(app.logger)
-        app.logger.info("Import data job finished")
     except Exception as e:
         app.logger.error(f"Import data failed {e}")
         traceback.print_tb(e.__traceback__)
