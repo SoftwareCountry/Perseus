@@ -4,38 +4,41 @@
       <div class="stage-number">1</div>
       <span class="stage-title">Select Lookup</span>
     </div>
-    <div class="stage-body"
-         [class.invalid-with-border]="!originText && lookup?.name">
-      <mat-form-field class="select-lookup" appearance="fill">
-        <mat-label>Select Lookup</mat-label>
-        <mat-select (selectionChange)="selectLookup($event)"
-                    [(value)]="selected"
-                    [compareWith]="compareSelectedItems"
-                    [disabled]="loading">
-          <mat-option *ngFor="let item of items" [value]="item">
-            {{item.name}}
-            <ng-container *ngIf="isUserDefined(item)">
-              <mat-icon svgIcon="delete" (click)="delete(item.id)"></mat-icon>
-              <mat-icon svgIcon="edit" (click)="edit(item)"></mat-icon>
-            </ng-container>
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <div class="lookup-type-params">
-        <ng-container *ngIf="isConceptTableField">
-          <mat-radio-button [checked]="lookupType === 'source_to_standard'"
-                            (change)="lookupTypeChanged($event.value)"
-                            [value]="lookupType"
-                            [disabled]="loading">Source to Standard</mat-radio-button>
-          <mat-radio-button [checked]="lookupType === 'source_to_source'"
-                            (change)="lookupTypeChanged($event.value)"
-                            [value]="lookupType"
-                            [disabled]="loading">Source to Source</mat-radio-button>
-          <mat-checkbox [checked]="lookup?.sourceToSourceIncluded"
-                        [disabled]="!withSourceToSource || loading"
-                        (change)="includeSourceToStandardChanged()">Include Source to Source</mat-checkbox>
-        </ng-container>
+    <div class="stage-body" [class.invalid-with-border]="!originText && lookup?.name">
+      <div class="select-fields-wrapper">
+        <mat-form-field class="select-lookup" appearance="fill">
+          <mat-label>Select Lookup</mat-label>
+          <mat-select (selectionChange)="selectLookup($event)"
+                      [(value)]="selected"
+                      [compareWith]="compareSelectedItems"
+                      [disabled]="loading">
+            <mat-option *ngFor="let item of items" [value]="item">
+              {{item.name}}
+              <ng-container *ngIf="isUserDefined(item)">
+                <mat-icon svgIcon="delete" (click)="delete(item.id)"></mat-icon>
+                <mat-icon svgIcon="edit" (click)="edit(item)"></mat-icon>
+              </ng-container>
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field *ngIf="isConceptTableField" class="select-lookup" appearance="fill">
+          <mat-label>Mapping</mat-label>
+          <mat-select
+            (selectionChange)="selectMapping($event.value)"
+            [value]="lookupType">
+            <mat-option [value]="'source_to_standard'">Source to Standard</mat-option>
+            <mat-option [value]="'source_to_source'">Source to Source</mat-option>
+            <div class="include-to-source-wrapper">
+              <div class="include-to-source">
+                <app-cdm-checkbox
+                  [formControl]="includeSourceToSource"
+                  (click)="includeSourceToStandardChanged()">
+                </app-cdm-checkbox>
+                <span>Include Source to Source</span>
+              </div>
+            </div>
+          </mat-select>
+        </mat-form-field>
       </div>
 
       <div class="flex-div">

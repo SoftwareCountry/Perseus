@@ -18,6 +18,7 @@ import { openErrorDialog, parseHttpError } from '@utils/error'
 import { catchError } from 'rxjs/operators'
 import { withLoading } from '@utils/loading'
 import { of } from 'rxjs'
+import { FormControl } from '@angular/forms'
 
 const editorSettings = {
   mode: 'text/x-mysql',
@@ -43,6 +44,8 @@ export class LookupComponent implements OnInit, AfterViewInit {
 
   @ViewChild('editor', { static: true }) editor;
   @ViewChild('disabledEditor', { static: true }) disabledEditor;
+
+  includeSourceToSource: FormControl;
 
   items: LookupListItem[];
   selected: LookupListItem;
@@ -114,6 +117,7 @@ export class LookupComponent implements OnInit, AfterViewInit {
       this.userDefined = this.isUserDefined(this.lookup)
     }
     this.updateItems();
+    this.includeSourceToSource = new FormControl(Boolean(this.lookup?.sourceToSourceIncluded))
   }
 
   ngAfterViewInit() {
@@ -228,6 +232,11 @@ export class LookupComponent implements OnInit, AfterViewInit {
     this.updatedSourceToStandard = '';
   }
 
+  selectMapping(selectedType: LookupType): void {
+    this.lookupType = selectedType;
+    this.refreshCodeMirror(this.lookup, false, true);
+  }
+
   edit(item: LookupListItem): void {
     this.editMode = true;
     this.selectLookup({value: item});
@@ -254,11 +263,6 @@ export class LookupComponent implements OnInit, AfterViewInit {
         })
       }
     });
-  }
-
-  lookupTypeChanged(type: LookupType) {
-    this.lookupType = type === 'source_to_standard' ? 'source_to_source' : 'source_to_standard';
-    this.refreshCodeMirror(this.lookup, false, true);
   }
 
   includeSourceToStandardChanged() {

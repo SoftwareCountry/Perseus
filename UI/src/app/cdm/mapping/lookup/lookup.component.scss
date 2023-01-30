@@ -62,8 +62,13 @@
   .stage-body {
     padding: 9px;
 
+    .select-fields-wrapper {
+      display: flex;
+      justify-content: space-between;
+    }
+
     .select-lookup {
-      width: 50%;
+      width: 45%;
       margin-left: 10px;
     }
 
@@ -132,6 +137,29 @@
       height: 150px;
     }
   }
+}
+
+.include-to-source {
+  display: flex;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  margin-left: 15px;
+  position: relative;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 90%;
+    height: 1px;
+    margin: 0 auto;
+    background-color: $blue;
+    opacity: 0.1;
+    position: absolute;
+    top: 0px;
+    left: 50%;
+    transform: translateX(-53%);
+  }
+
 }
 
 .invalid-label {
